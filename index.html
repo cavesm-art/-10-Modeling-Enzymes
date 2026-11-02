@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>#10 Modeling Enzymes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Lexend:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1d1450; --muted:#5b5390; --paper:#ffffff; --bg:#f1eeff; --dots:#d8d0ff; --line:#d9d2f5;
+  --bd:#1d1450; --shc:#1d1450; --head:#241a7a; --yellow:#ffd23f;
+  --pink-t:#ffd6e6; --pink-e:#ff4f8b;
+  --blue-t:#d3e4ff; --blue-e:#2f7bff;
+  --green-t:#c9f6e0; --green-e:#0fa97a;
+  --orange-t:#ffe3b3; --orange-e:#ff9a1f;
+  --purple-t:#e3d9ff; --purple-e:#7c4dff;
+  --ok-bg:#c9f6e0; --ok:#0b8a63; --no-bg:#ffd9dc; --no:#d62839;
+  --tb:64px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#f4f1ff; --muted:#b9b0e8; --paper:#201a55; --bg:#120d33; --dots:#231b5e; --line:#41388a;
+    --bd:#8f84f0; --shc:#08051f; --head:#0c0828;
+    --pink-t:#4d2145; --pink-e:#ff6fa3; --blue-t:#1f3669; --blue-e:#6aa2ff;
+    --green-t:#134a3b; --green-e:#37d6a3; --orange-t:#5a3b12; --orange-e:#ffb04d;
+    --purple-t:#3a2d7a; --purple-e:#a58cff;
+    --ok-bg:#134a3b; --ok:#37d6a3; --no-bg:#5a2030; --no:#ff8c9b;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#f4f1ff; --muted:#b9b0e8; --paper:#201a55; --bg:#120d33; --dots:#231b5e; --line:#41388a;
+  --bd:#8f84f0; --shc:#08051f; --head:#0c0828;
+  --pink-t:#4d2145; --pink-e:#ff6fa3; --blue-t:#1f3669; --blue-e:#6aa2ff;
+  --green-t:#134a3b; --green-e:#37d6a3; --orange-t:#5a3b12; --orange-e:#ffb04d;
+  --purple-t:#3a2d7a; --purple-e:#a58cff;
+  --ok-bg:#134a3b; --ok:#37d6a3; --no-bg:#5a2030; --no:#ff8c9b;
+}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + var(--tb) + 10px)}
+body{
+  margin:0; color:var(--ink); font-family:'Lexend','Helvetica Neue',Arial,sans-serif; font-size:17px; line-height:1.6;
+  background:radial-gradient(var(--dots) 1.5px, transparent 1.5px) 0 0/22px 22px, var(--bg);
+  background-color:var(--bg);
+}
+body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); background:var(--bg); z-index:60}
+h1,h2,h3,h4{font-family:'Bricolage Grotesque','Lexend',sans-serif; line-height:1.12; margin:0}
+button,select,textarea,input{font:inherit; color:inherit}
+:focus-visible{outline:4px solid var(--blue-e); outline-offset:2px}
+
+/* ===== hero ===== */
+.hero{position:relative; overflow:hidden; background:var(--head); color:#fff; padding:28px 22px 30px}
+.hero-in{position:relative; z-index:2; max-width:1160px; margin:0 auto; display:grid; gap:18px; grid-template-columns:minmax(0,1fr); align-items:center}
+@media (min-width:860px){.hero-in{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}}
+.hero h1{font-size:clamp(34px,6.4vw,64px); font-weight:800; letter-spacing:-.02em; color:#fff}
+.hero .tag{font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:clamp(20px,3.4vw,30px); color:var(--yellow); margin:6px 0 16px}
+.dqs{display:flex; flex-wrap:wrap; gap:8px}
+.dqs span{background:rgba(255,255,255,.12); border:2px solid rgba(255,255,255,.55); border-radius:999px; padding:4px 14px; font-size:15px; line-height:1.35}
+.scene{width:100%; max-width:380px; justify-self:center}
+.scene svg{width:100%; height:auto; display:block}
+.bub{position:absolute; inset:0; z-index:1; pointer-events:none}
+.bub i{position:absolute; bottom:-60px; border-radius:50%; border:2px solid rgba(255,255,255,.4); background:rgba(255,255,255,.07); animation:rise linear infinite}
+@keyframes rise{from{transform:translateY(0)}to{transform:translateY(-420px)}}
+.hs{animation:hsMove 6s ease-in-out infinite}
+.hs2{animation:hsMove 6s ease-in-out infinite; animation-delay:-3s}
+@keyframes hsMove{0%{transform:translate(0,0); opacity:0}8%{opacity:1}50%{transform:translate(168px,74px); opacity:1}58%{transform:translate(168px,74px); opacity:0}100%{transform:translate(168px,74px); opacity:0}}
+.hb{animation:hbUp 6s ease-out infinite; opacity:0}
+.hb2{animation:hbUp 6s ease-out infinite; animation-delay:-3s; opacity:0}
+@keyframes hbUp{0%,52%{transform:translate(0,0); opacity:0}58%{opacity:1}100%{transform:translate(var(--dx,6px),-110px); opacity:0}}
+
+/* ===== toolbar ===== */
+.toolbar{position:sticky; top:env(safe-area-inset-top,0px); z-index:50; background:var(--bg); border-bottom:3px solid var(--bd)}
+.tb-in{max-width:1160px; margin:0 auto; padding:8px 16px; display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+.tb-prog{flex:1 1 300px; min-width:0}
+.segs{display:flex; gap:4px}
+.seg{flex:1; height:18px; padding:0; border-radius:8px; background:var(--line); border:2px solid var(--bd); cursor:pointer}
+.seg:disabled{opacity:.55; cursor:default}
+.seg:not(:disabled):hover{transform:translateY(-2px)}
+.seg.done{background:var(--c, var(--green-e))}
+.seg.now{background:var(--c, var(--blue-e)); box-shadow:0 0 0 3px var(--paper), 0 0 0 5px var(--bd)}
+#plabel{margin:4px 0 0; font-size:14px; color:var(--muted); line-height:1.3; font-weight:600}
+.tb-btns{display:flex; gap:8px; flex-wrap:wrap}
+.tbtn{min-height:42px; padding:4px 14px; border:3px solid var(--bd); border-radius:12px; background:var(--paper); font-weight:600; cursor:pointer; box-shadow:3px 3px 0 var(--shc)}
+.tbtn:active{transform:translate(2px,2px); box-shadow:1px 1px 0 var(--shc)}
+.tbtn[aria-pressed="true"]{background:var(--yellow); color:#1d1450}
+.readpanel{flex:1 1 100%; display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding:6px 0 4px; font-size:15px}
+.readpanel .tbtn{min-height:38px; font-size:15px}
+.readpanel .tbtn.sel{background:var(--blue-t)}
+
+.wrap{max-width:1160px; margin:0 auto; padding:22px 16px 70px}
+.layout{display:grid; grid-template-columns:minmax(0,1fr); gap:24px; align-items:start}
+@media (min-width:920px){
+  .layout{grid-template-columns:minmax(0,1fr) 390px}
+  .boardcol{position:sticky; top:calc(env(safe-area-inset-top,0px) + var(--tb) + 14px)}
+}
+.layout.solo{grid-template-columns:minmax(0,1fr)}
+.layout.solo .boardcol{display:none}
+
+/* ===== stage frame ===== */
+.stage{--tint:var(--pink-t); --edge:var(--pink-e)}
+.stage[data-c="blue"]{--tint:var(--blue-t); --edge:var(--blue-e)}
+.stage[data-c="green"]{--tint:var(--green-t); --edge:var(--green-e)}
+.stage[data-c="orange"]{--tint:var(--orange-t); --edge:var(--orange-e)}
+.stage[data-c="purple"]{--tint:var(--purple-t); --edge:var(--purple-e)}
+.stage-head{display:flex; align-items:center; gap:12px; margin:0 0 12px}
+.lvl{flex:none; width:52px; height:52px; border-radius:50%; background:var(--edge); color:#120d33; border:3px solid var(--bd); box-shadow:3px 3px 0 var(--shc); display:grid; place-items:center; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:26px}
+.stage-head h2{font-size:clamp(24px,4.4vw,36px); font-weight:800; letter-spacing:-.01em}
+.mission{display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap; background:var(--tint); border:3px solid var(--bd); border-radius:14px; padding:10px 14px; margin:0 0 14px; box-shadow:4px 4px 0 var(--shc)}
+.mission p{margin:0; flex:1 1 240px; font-size:16px; line-height:1.45}
+.cyc{flex:none; background:var(--ink); color:var(--paper); border-radius:999px; padding:0 14px; font-weight:600; font-size:15px; line-height:1.9}
+.skill{flex:1 1 100%!important; font-size:14px!important; color:var(--muted); font-weight:600}
+.stage-body{background:var(--paper); border:3px solid var(--bd); border-radius:18px; padding:18px 18px 6px; box-shadow:7px 7px 0 var(--edge)}
+.block{margin:0 0 18px; position:relative}
+.appear{animation:appear .35s ease both}
+@keyframes appear{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+.nav{margin:18px 0 0; display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+.reading{outline:4px solid var(--yellow); outline-offset:4px; border-radius:12px}
+.spk{display:none; position:absolute; top:6px; right:6px; z-index:3; width:38px; height:38px; border-radius:50%; border:3px solid var(--bd); background:var(--yellow); color:#1d1450; cursor:pointer; font-size:17px; line-height:1; padding:0}
+body.tts-on .spk{display:block}
+body.tts-on .callout.block{padding-right:54px}
+body.tts-on .q.block > .qtext{padding-right:48px}
+body.tts-on .draw.block .tg{padding-right:44px}
+
+/* ===== parts ===== */
+.callout{background:var(--tint); border:3px solid var(--bd); border-radius:14px; padding:10px 16px; box-shadow:3px 3px 0 var(--shc)}
+.callout h3{font-size:21px; margin:0 0 4px}
+.callout p{margin:6px 0}
+.callout ol{margin:6px 0; padding-left:24px}
+.draw{border:3px dashed var(--edge); border-radius:14px; padding:12px 16px 14px; background:radial-gradient(var(--line) 1.2px, transparent 1.2px) 0 0/16px 16px, var(--paper)}
+.draw .tg{font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; margin-bottom:2px}
+.draw ol{margin:6px 0 10px; padding-left:24px}
+.draw li{margin:6px 0}
+.chip{display:inline-block; padding:0 9px; border-radius:6px; font-size:14px; font-weight:600; line-height:1.6; vertical-align:baseline}
+.chip.c1{background:var(--ink); color:var(--paper)}
+.chip.c2{background:#2f7bff; color:#fff}
+.absent{margin-top:10px; background:var(--orange-t); border:3px solid var(--bd); border-radius:12px; padding:8px 12px; font-size:16px}
+.q .qtext{font-weight:600; margin:0 0 6px}
+.opts{display:grid}
+.opt{display:block; width:100%; text-align:left; min-height:46px; padding:9px 14px; margin:6px 0; border:3px solid var(--bd); border-radius:12px; background:var(--paper); cursor:pointer; box-shadow:3px 3px 0 var(--shc); transition:transform .08s, box-shadow .08s}
+.opt:hover:not(:disabled){transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--shc); background:var(--tint)}
+.opt:active:not(:disabled){transform:translate(2px,2px); box-shadow:1px 1px 0 var(--shc)}
+.opt:disabled{cursor:default; box-shadow:none}
+.opt.right{background:var(--ok-bg); border-color:var(--ok); font-weight:600}
+.opt.wrong{background:var(--no-bg); border-color:var(--no); opacity:.85}
+.opt.picked{background:var(--tint); font-weight:600}
+.opt.dim{opacity:.55}
+.fb{margin:8px 0 0; padding:8px 12px; border-radius:10px; border:2px solid transparent}
+.fb:empty{display:none}
+.fb.ok{background:var(--ok-bg); border-color:var(--ok)}
+.fb.no{background:var(--no-bg); border-color:var(--no)}
+.fb.tip{background:var(--tint); border-color:var(--edge)}
+.btn{min-height:46px; padding:8px 20px; border-radius:12px; border:3px solid var(--bd); background:var(--paper); font-weight:600; cursor:pointer; box-shadow:3px 3px 0 var(--shc); transition:transform .08s, box-shadow .08s}
+.btn:hover:not(:disabled){transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--shc)}
+.btn:active:not(:disabled){transform:translate(2px,2px); box-shadow:1px 1px 0 var(--shc)}
+.btn.primary{background:var(--edge); color:#120d33}
+.btn:disabled{opacity:.6; cursor:default; box-shadow:none}
+.btn.big{font-size:19px; padding:11px 26px}
+.btn.small{min-height:38px; padding:4px 14px; font-size:15px}
+.helpbtn{margin-top:8px; min-height:38px; padding:2px 14px; font-size:15px; font-weight:600; border:3px solid var(--bd); border-radius:999px; background:var(--yellow); color:#1d1450; cursor:pointer}
+.board-note{display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap}
+@media (min-width:920px){.jump{display:none}}
+.words{width:100%; border-collapse:collapse}
+.eq{font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:28px; text-align:center; margin:6px 0 0}
+.match{display:grid; gap:8px; margin:6px 0 10px}
+.mrow{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+.mrow span{flex:1 1 220px}
+select{min-height:42px; padding:4px 8px; border:3px solid var(--bd); border-radius:10px; background:var(--paper); max-width:100%}
+select.good{border-color:var(--ok); background:var(--ok-bg)}
+select.bad{border-color:var(--no); background:var(--no-bg)}
+textarea,input[type=text],input[type=search]{width:100%; border:3px solid var(--bd); border-radius:12px; padding:10px 12px; background:var(--paper)}
+textarea{min-height:96px; resize:vertical}
+
+/* ===== sim ===== */
+.sim canvas{width:100%; height:auto; aspect-ratio:560/320; display:block; border:3px solid var(--bd); border-radius:14px; background:#17124a; box-shadow:5px 5px 0 var(--shc)}
+.simctl{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:10px 0}
+.simctl .opt{width:auto; margin:0; padding:6px 14px; min-height:44px}
+.stats{display:flex; gap:18px; flex-wrap:wrap; font-weight:600; margin:8px 0}
+.stats span b{font-family:'Bricolage Grotesque',sans-serif; font-size:28px}
+table.res{width:100%; border-collapse:separate; border-spacing:0; margin:8px 0; border:3px solid var(--bd); border-radius:12px; overflow:hidden}
+table.res th,table.res td{padding:6px 12px; text-align:left; border-top:2px solid var(--line)}
+table.res thead th{background:var(--tint); border-top:0}
+.legend{font-size:15px; color:var(--muted); margin:6px 0 0}
+.small{font-size:15px; color:var(--muted)}
+.lock svg,.chart svg{width:100%; height:auto; display:block}
+.lock,.chart{border:3px solid var(--bd); border-radius:14px; padding:8px 10px; background:var(--paper)}
+.cap{min-height:1.6em; font-weight:600; margin:4px 0}
+svg .t{fill:var(--ink)}
+svg .ln{stroke:var(--ink); fill:none; stroke-width:2}
+svg .ah{fill:var(--ink)}
+svg .gridl{stroke:var(--line); stroke-width:1}
+
+/* ===== board ===== */
+.board{background:#1b1450; color:#fff; border:3px solid var(--bd); border-radius:18px; padding:12px 14px 14px; box-shadow:7px 7px 0 var(--shc)}
+.board h3{font-size:22px; color:#fff; margin:0 0 2px}
+.board p{margin:0 0 8px; font-size:14px; color:#d5cffb; line-height:1.4}
+.board svg{width:100%; height:auto; display:block}
+.board svg .t{fill:#fff}
+.board svg .ln{stroke:#fff}
+.board svg .ah{fill:#fff}
+.board .layer{opacity:0; transition:opacity .6s}
+.board.has-start .layer-start,.board.has-terms .layer-terms,.board.has-products .layer-products,
+.board.has-site .layer-site,.board.has-energy .layer-energy,.board.has-denat .layer-denat,
+.board.has-amylase .layer-amylase{opacity:1}
+.board .pocketg{display:none}
+.board.has-site .pocketg{display:inline}
+.board.has-site .plain{display:none}
+.board.pulse{animation:pulse 1s ease}
+@keyframes pulse{0%{box-shadow:7px 7px 0 var(--shc), 0 0 0 0 var(--yellow)}100%{box-shadow:7px 7px 0 var(--shc), 0 0 0 16px transparent}}
+
+/* ===== intro ===== */
+.road{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); margin:12px 0 18px; padding:0; list-style:none}
+.road li{border:3px solid var(--bd); border-radius:14px; padding:10px 14px 12px; box-shadow:4px 4px 0 var(--shc); background:var(--tint)}
+.road li:nth-child(1){--tint:var(--pink-t)} .road li:nth-child(2){--tint:var(--blue-t)} .road li:nth-child(3){--tint:var(--green-t)}
+.road li:nth-child(4){--tint:var(--orange-t)} .road li:nth-child(5){--tint:var(--purple-t)} .road li:nth-child(6){--tint:var(--pink-t)}
+.road b{display:block; font-family:'Bricolage Grotesque',sans-serif; font-size:21px; margin:2px 0 2px}
+.road .ico{font-size:28px; line-height:1}
+.road p{margin:0; font-size:15.5px; line-height:1.45}
+.two{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); margin:12px 0 16px}
+.skills{display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 0}
+.skills span{background:var(--paper); border:3px solid var(--bd); border-radius:999px; padding:0 12px; font-size:15px; font-weight:600}
+.score{width:100%; border-collapse:separate; border-spacing:0; margin:8px 0 14px; border:3px solid var(--bd); border-radius:12px; overflow:hidden}
+.score td,.score th{padding:6px 12px; text-align:left; border-top:2px solid var(--line)}
+.score tr:first-child th{background:var(--tint); border-top:0}
+.name-row{display:grid; grid-template-columns:2fr 1fr; gap:10px; margin:8px 0}
+.report{min-height:360px; font-size:15px; line-height:1.5}
+.burst{position:relative; height:0}
+.burst i{position:absolute; bottom:0; border-radius:50%; border:3px solid var(--bd); animation:pop 2.4s ease-out forwards}
+@keyframes pop{from{transform:translateY(0); opacity:1}to{transform:translateY(-260px); opacity:0}}
+
+/* ===== word help ===== */
+.gloss .gsearch{margin:0 0 12px}
+.glist{display:grid; gap:10px}
+.gcard{border:3px solid var(--bd); border-radius:14px; background:var(--paper); box-shadow:3px 3px 0 var(--shc)}
+.gcard summary{cursor:pointer; padding:10px 14px; list-style:none; display:flex; gap:12px; align-items:baseline; flex-wrap:wrap}
+.gcard summary::-webkit-details-marker{display:none}
+.gcard summary::before{content:"＋"; font-weight:700}
+.gcard[open] summary::before{content:"－"}
+.gterm{font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:21px}
+.gshort{font-size:15px; color:var(--muted); flex:1 1 240px}
+.gbody{padding:4px 16px 14px; border-top:3px solid var(--line)}
+.grow{margin:10px 0 0}
+.grow h4{font-size:15px; color:var(--muted); margin:0 0 2px; font-family:'Lexend',sans-serif; font-weight:600}
+.grow p{margin:0}
+.parts{display:flex; gap:8px; flex-wrap:wrap}
+.part{background:var(--yellow); color:#1d1450; border:2px solid var(--bd); border-radius:8px; padding:0 10px; font-size:15px}
+.gdlg{border:3px solid var(--bd); border-radius:18px; padding:0; width:min(760px,94vw); max-height:88vh; background:var(--bg); color:var(--ink); box-shadow:8px 8px 0 var(--shc)}
+.gdlg::backdrop{background:rgba(20,10,60,.6)}
+.dhead{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 16px; border-bottom:3px solid var(--bd); background:var(--yellow); color:#1d1450}
+.dhead h2{font-size:26px}
+.dbody{padding:14px 16px 18px; overflow:auto; max-height:calc(88vh - 70px)}
+.support-top{display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap; margin:0 0 12px}
+.support-top h2{font-size:clamp(28px,5vw,42px)}
+
+@media (prefers-reduced-motion: reduce){
+  .appear,.board.pulse,.hs,.hs2,.hb,.hb2{animation:none}
+  .hs,.hs2,.hb,.hb2{opacity:1}
+  .bub{display:none}
+  .board .layer{transition:none}
+  .burst{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="bub" id="bub" aria-hidden="true"></div>
+  <div class="hero-in">
+    <div>
+      <h1>#10 Modeling Enzymes</h1>
+      <p class="tag">Build a model. Test it. Fix it.</p>
+      <div class="dqs">
+        <span>What happens when a protein gets too hot?</span>
+        <span>How can we investigate if enzymes really work?</span>
+        <span>Why is an enzyme’s shape vital to its function?</span>
+      </div>
+    </div>
+    <div class="scene" aria-hidden="true">
+      <svg viewBox="0 0 360 220">
+        <defs><mask id="hm" maskUnits="userSpaceOnUse" x="0" y="0" width="360" height="220"><rect width="360" height="220" fill="#fff"/><rect x="204" y="86" width="56" height="38" rx="14" fill="#000"/></mask></defs>
+        <circle cx="232" cy="150" r="62" fill="#5fbf7a" stroke="#c9f6e0" stroke-width="4" mask="url(#hm)"/>
+        <g transform="translate(64,18)"><g class="hs"><circle cx="-13" r="13" fill="#5b7cff"/><circle cx="13" r="13" fill="#19c7b0"/></g></g>
+        <g transform="translate(64,40)"><g class="hs2"><circle cx="-13" r="13" fill="#5b7cff"/><circle cx="13" r="13" fill="#19c7b0"/></g></g>
+        <g transform="translate(232,92)">
+          <circle class="hb" r="9" fill="#fff" fill-opacity=".85" style="--dx:-10px"/>
+          <circle class="hb" r="6" cx="14" cy="6" fill="#fff" fill-opacity=".85" style="--dx:12px; animation-delay:-5.4s"/>
+          <circle class="hb2" r="9" fill="#fff" fill-opacity=".85" style="--dx:8px"/>
+          <circle class="hb2" r="6" cx="-14" cy="6" fill="#fff" fill-opacity=".85" style="--dx:-12px; animation-delay:-2.4s"/>
+        </g>
+        <text x="232" y="214" text-anchor="middle" font-size="15" font-weight="600" fill="#fff" font-family="Lexend, sans-serif">catalase at work</text>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<div class="toolbar" id="toolbar">
+  <div class="tb-in">
+    <div class="tb-prog" id="progress" hidden>
+      <div class="segs" id="segs"></div>
+      <p id="plabel"></p>
+    </div>
+    <div class="tb-btns">
+      <button class="tbtn" id="btnWords" type="button">📖 Word help</button>
+      <button class="tbtn" id="btnBack" type="button" hidden>← Back to the activity</button>
+      <button class="tbtn" id="btnRead" type="button" aria-pressed="false">🔊 Read to me</button>
+    </div>
+    <div class="readpanel" id="readpanel" hidden>
+      <button class="tbtn" id="rStage" type="button">▶ Read this stage</button>
+      <button class="tbtn" id="rStop" type="button">■ Stop</button>
+      <button class="tbtn" id="rAuto" type="button" aria-pressed="true">Auto-read new steps: On</button>
+      <span>Speed:</span>
+      <button class="tbtn" data-rate="0.8" type="button">Slow</button>
+      <button class="tbtn sel" data-rate="1" type="button">Normal</button>
+      <button class="tbtn" data-rate="1.25" type="button">Fast</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="activity">
+    <div class="layout" id="layout">
+      <main id="main"></main>
+      <aside class="boardcol" id="boardcol">
+        <div class="board" id="board">
+          <h3>📋 Model Board</h3>
+          <p>Draw on your desk first. Then compare your drawing to this board. Fix your desk in <span class="chip c2">Color 2</span>.</p>
+          <svg viewBox="0 0 420 350" role="img" aria-label="Model board showing the enzyme catalase, the substrate hydrogen peroxide, products, active site, energy arrows, a denatured enzyme, and a different enzyme">
+            <defs>
+              <marker id="bh" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path class="ah" d="M0,0 L9,4.5 L0,9z"/></marker>
+              <mask id="bm" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="350">
+                <rect x="0" y="0" width="420" height="350" fill="#fff"/>
+                <rect x="92" y="158" width="56" height="38" rx="14" fill="#000"/>
+              </mask>
+            </defs>
+            <g class="layer layer-start">
+              <circle class="plain" cx="120" cy="230" r="62" fill="#5fbf7a" stroke="#c9f6e0" stroke-width="3"/>
+              <g class="pocketg"><circle cx="120" cy="230" r="62" fill="#5fbf7a" stroke="#c9f6e0" stroke-width="3" mask="url(#bm)"/></g>
+              <circle cx="66" cy="60" r="13" fill="#5b7cff"/><circle cx="92" cy="60" r="13" fill="#19c7b0"/>
+              <text class="t" x="79" y="34" font-size="14" font-weight="600" text-anchor="middle">H₂O₂</text>
+              <text class="t" x="120" y="314" font-size="14" font-weight="600" text-anchor="middle">catalase</text>
+            </g>
+            <g class="layer layer-terms">
+              <text class="t" x="120" y="332" font-size="13" text-anchor="middle">= enzyme</text>
+              <text class="t" x="79" y="90" font-size="13" text-anchor="middle">= substrate</text>
+            </g>
+            <g class="layer layer-products">
+              <line class="ln" x1="188" y1="232" x2="238" y2="206" marker-end="url(#bh)"/>
+              <circle cx="262" cy="196" r="12" fill="#5b7cff"/><circle cx="298" cy="176" r="12" fill="#19c7b0"/>
+              <text class="t" x="262" y="222" font-size="12" text-anchor="middle">water (H₂O)</text>
+              <text class="t" x="300" y="152" font-size="12" text-anchor="middle">oxygen (O₂)</text>
+              <text class="t" x="282" y="124" font-size="13" font-weight="600" text-anchor="middle">products</text>
+            </g>
+            <g class="layer layer-site">
+              <line class="ln" x1="84" y1="104" x2="108" y2="158" marker-end="url(#bh)"/>
+              <text class="t" x="82" y="168" font-size="13" font-weight="600" text-anchor="end">active site</text>
+              <line class="ln" x1="86" y1="170" x2="100" y2="178" marker-end="url(#bh)"/>
+            </g>
+            <g class="layer layer-energy">
+              <text class="t" x="196" y="38" font-size="13">room:</text>
+              <line class="ln" x1="244" y1="34" x2="340" y2="34" marker-end="url(#bh)"/>
+              <text class="t" x="196" y="64" font-size="13">iced:</text>
+              <line class="ln" x1="244" y1="60" x2="274" y2="60" marker-end="url(#bh)"/>
+              <text class="t" x="196" y="88" font-size="12">faster = more energy</text>
+            </g>
+            <g class="layer layer-denat">
+              <path d="M286,282 C284,258 312,246 336,258 C358,270 352,304 330,316 C306,326 288,308 286,282Z" fill="#b9a77a" stroke="#f0e2b8" stroke-width="3" stroke-dasharray="6 4"/>
+              <path d="M322,262 L338,276 L328,284" fill="none" stroke="#7d6c44" stroke-width="5" stroke-linecap="round"/>
+              <text class="t" x="320" y="340" font-size="13" font-weight="600" text-anchor="middle">denatured</text>
+            </g>
+            <g class="layer layer-amylase">
+              <polygon points="345,214 385,214 365,176" fill="#ff7fb0" stroke="#ffd0e3" stroke-width="3"/>
+              <text class="t" x="365" y="234" font-size="12" text-anchor="middle">amylase: no fit ✗</text>
+            </g>
+          </svg>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div id="support" hidden></div>
+</div>
+
+<script>
+'use strict';
+/* ====== Sample class data (edit these to match your classes) ====== */
+const DATA = {
+  iced:   [55, 49, 52],
+  room:   [17, 19, 18],
+  limit:  120
+};
+/* ================================================================== */
+
+const S = { name:'', hour:'', answers:{}, cards:{}, sim:{}, cer:{}, refl:{} };
+const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const main = document.getElementById('main');
+const board = document.getElementById('board');
+const layout = document.getElementById('layout');
+const SUB1 = '#5b7cff', SUB2 = '#19c7b0';
+
+function el(tag, props, ...kids){
+  const e = document.createElement(tag);
+  if (props) for (const k in props){
+    const v = props[k];
+    if (k === 'class') e.className = v;
+    else if (k === 'html') e.innerHTML = v;
+    else if (k.slice(0,2) === 'on') e.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (v !== false && v != null) e.setAttribute(k, v === true ? '' : v);
+  }
+  for (const kid of kids.flat()){
+    if (kid == null || kid === false) continue;
+    e.append(kid.nodeType ? kid : document.createTextNode(kid));
+  }
+  return e;
+}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const C1 = '<span class="chip c1">Color 1</span>';
+const C2 = '<span class="chip c2">Color 2</span>';
+
+/* ====================== READ ALOUD ====================== */
+const TTS = { ok: 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window, on:false, auto:true, rate:1 };
+function speechText(t){
+  return t
+    .replace(/2H₂O₂\s*→\s*2H₂O\s*\+\s*O₂/g, 'two hydrogen peroxide molecules make two water molecules plus one oxygen molecule')
+    .replace(/H₂O₂/g, 'hydrogen peroxide').replace(/H₂O/g, 'water').replace(/O₂/g, 'oxygen')
+    .replace(/(\d+)\s*°C/g, '$1 degrees Celsius')
+    .replace(/(\d+)\s*s\b/g, '$1 seconds')
+    .replace(/÷/g, ' divided by ').replace(/\s\+\s/g, ' plus ').replace(/→/g, ' makes ').replace(/＋|－/g, ' ')
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}]/gu, ' ')
+    .replace(/[‣▸•]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
+function cleanForSpeech(e){
+  const c = e.cloneNode(true);
+  c.querySelectorAll('.spk,.nospeak,script,style').forEach(n => n.remove());
+  c.querySelectorAll('[data-speak]').forEach(n => n.replaceWith(document.createTextNode(' ' + n.getAttribute('data-speak') + ' ')));
+  c.querySelectorAll('svg[aria-label],canvas[aria-label]').forEach(n => n.replaceWith(document.createTextNode(' Picture: ' + n.getAttribute('aria-label') + '. ')));
+  c.querySelectorAll('svg,canvas,textarea,input').forEach(n => n.remove());
+  c.querySelectorAll('select').forEach(n => n.replaceWith(document.createTextNode(' blank. ')));
+  c.querySelectorAll('.opts').forEach(box => [...box.querySelectorAll('.opt')].forEach((b, i) => { b.textContent = `Choice ${'ABCDEF'[i] || i + 1}. ${b.textContent}. `; }));
+  c.querySelectorAll('ol').forEach(ol => [...ol.children].forEach((li, i) => li.prepend(document.createTextNode(`Step ${i + 1}. `))));
+  c.querySelectorAll('p,div,li,h2,h3,h4,tr,summary').forEach(n => n.append(document.createTextNode(' . ')));
+  return speechText(c.textContent).replace(/(\s\.){2,}/g, ' .');
+}
+function speakText(text, opts){
+  if (!TTS.ok || !text) return;
+  opts = opts || {};
+  if (!opts.queue){ speechSynthesis.cancel(); }
+  const pieces = text.match(/[^.!?]+[.!?]*/g) || [text];
+  const chunks = []; let cur = '';
+  pieces.forEach(p => { if ((cur + p).length > 170 && cur){ chunks.push(cur); cur = p; } else cur += p; });
+  if (cur.trim()) chunks.push(cur);
+  const go = () => chunks.forEach((c, i) => {
+    const u = new SpeechSynthesisUtterance(c.trim());
+    u.rate = TTS.rate; u.lang = 'en-US';
+    if (i === 0 && opts.onStart) u.onstart = opts.onStart;
+    if (i === chunks.length - 1 && opts.onEnd){ u.onend = opts.onEnd; u.onerror = opts.onEnd; }
+    speechSynthesis.speak(u);
+  });
+  if (opts.queue) go(); else setTimeout(go, 40);
+}
+function readEl(e, opts){
+  if (!TTS.ok) return;
+  opts = opts || {};
+  if (!opts.queue) document.querySelectorAll('.reading').forEach(n => n.classList.remove('reading'));
+  speakText(cleanForSpeech(e), {
+    queue: !!opts.queue,
+    onStart: () => e.classList.add('reading'),
+    onEnd: () => e.classList.remove('reading')
+  });
+}
+function stopSpeech(){
+  if (!TTS.ok) return;
+  speechSynthesis.cancel();
+  document.querySelectorAll('.reading').forEach(n => n.classList.remove('reading'));
+}
+function readStage(){
+  const v = views[cur]; if (!v) return;
+  const blocks = [...v.sec.querySelectorAll('.block')];
+  stopSpeech();
+  setTimeout(() => blocks.forEach(b => readEl(b, {queue:true})), 80);
+}
+(function setupReadUI(){
+  const btn = document.getElementById('btnRead'), panel = document.getElementById('readpanel');
+  if (!TTS.ok){ btn.disabled = true; btn.textContent = '🔊 Read to me (not available in this browser)'; return; }
+  btn.addEventListener('click', () => {
+    TTS.on = !TTS.on;
+    btn.setAttribute('aria-pressed', TTS.on ? 'true' : 'false');
+    btn.textContent = TTS.on ? '🔊 Read to me: On' : '🔊 Read to me';
+    document.body.classList.toggle('tts-on', TTS.on);
+    panel.hidden = !TTS.on;
+    if (TTS.on && !document.getElementById('activity').hidden && views[cur] && views[cur].sec.querySelector('.block')) readStage(); else stopSpeech();
+  });
+  document.getElementById('rStage').addEventListener('click', () => readStage());
+  document.getElementById('rStop').addEventListener('click', stopSpeech);
+  const auto = document.getElementById('rAuto');
+  auto.addEventListener('click', () => { TTS.auto = !TTS.auto; auto.setAttribute('aria-pressed', TTS.auto ? 'true' : 'false'); auto.textContent = 'Auto-read new steps: ' + (TTS.auto ? 'On' : 'Off'); });
+  panel.querySelectorAll('[data-rate]').forEach(b => b.addEventListener('click', () => {
+    TTS.rate = parseFloat(b.dataset.rate);
+    panel.querySelectorAll('[data-rate]').forEach(x => x.classList.toggle('sel', x === b));
+  }));
+  // read feedback messages when they appear
+  new MutationObserver(muts => {
+    if (!TTS.on || !TTS.auto) return;
+    for (const m of muts){
+      const t = m.target;
+      const vw = t.closest ? t.closest('.view') : null;
+      if (vw && vw.hidden) continue;
+      if (t.classList && t.classList.contains('fb') && t.textContent.trim()) readEl(t, {queue:true});
+    }
+  }).observe(main, {childList:true, subtree:true});
+})();
+
+/* ====================== WORD HELP ====================== */
+const GLOSS = [
+ {k:'model', term:'Model', short:'A simplified picture or explanation of how something works.',
+  plain:'A model leaves out most of the details so you can focus on the big idea. Scientists use models to make predictions and then test them with evidence. A good model changes when new information shows up.',
+  parts:[['model','a smaller or simpler version of the real thing']], like:'A map. It is not the real city, but it helps you find your way.', lab:'Your desk drawing is your model of how catalase works.'},
+ {k:'enzyme', term:'Enzyme', short:'A protein that speeds up a chemical reaction.',
+  plain:'Enzymes are proteins made by living things. They help reactions happen fast enough to keep you alive. An enzyme is not used up, so one enzyme can do its job again and again.',
+  parts:[['en-','in'],['-zyme','yeast (the first enzymes were found in yeast)']], like:'A worker on an assembly line who repeats the same job all day.', lab:'Catalase is the enzyme. The catalase in this lab comes from yeast.'},
+ {k:'catalase', term:'Catalase', short:'The enzyme that breaks down hydrogen peroxide.',
+  plain:'Catalase is found in almost all living things. It breaks hydrogen peroxide into water and oxygen gas, which protects cells from damage.',
+  parts:[['catalyst','something that speeds up a reaction'],['-ase','an ending used in enzyme names']], like:'A cleanup crew that removes harmful waste.', lab:'The spheres in the lab are soaked in catalase from yeast.'},
+ {k:'hydrogen-peroxide', term:'Hydrogen peroxide (H₂O₂)', short:'A molecule that cells make as a harmful by-product.',
+  plain:'Each molecule has 2 hydrogen atoms and 2 oxygen atoms. In cells, it can damage other molecules, so catalase breaks it down.',
+  parts:[['hydrogen','“water maker”'],['per-oxide','an oxygen compound with extra oxygen']], like:'Toxic trash that has to be taken out.', lab:'H₂O₂ is the substrate in this lab.'},
+ {k:'substrate', term:'Substrate', short:'The molecule an enzyme acts on.',
+  plain:'The substrate fits into the enzyme’s active site. Each enzyme works with a specific substrate, or a small group of them.',
+  parts:[['sub-','under'],['-strate','layer or something spread out']], like:'The key that fits one lock.', lab:'Hydrogen peroxide (H₂O₂) is the substrate for catalase.'},
+ {k:'product', term:'Product', short:'The new molecules a reaction makes.',
+  plain:'During a reaction, the substrate is changed into new molecules. Those new molecules are the products.',
+  parts:[['pro-','forward'],['-duct','to lead or bring']], like:'What comes off the end of a factory line.', lab:'The products are water (H₂O) and oxygen (O₂). The oxygen forms the bubbles you see.'},
+ {k:'active-site', term:'Active site', short:'The pocket on an enzyme where the substrate fits.',
+  plain:'The active site has a specific shape. Only a substrate with a matching shape fits, and that is where the reaction happens.',
+  parts:[['active','working'],['site','a place']], like:'A lock. Only the right key fits.', lab:'Catalase’s active site fits H₂O₂. It does not fit the substrate of a different enzyme, like amylase.'},
+ {k:'collide', term:'Collide', short:'To crash or bump into each other.',
+  plain:'For a reaction to happen, an enzyme and a substrate have to bump into each other. More collisions can mean more reactions.',
+  parts:[['col-','together'],['-lide','to strike']], like:'Bumper cars.', lab:'In the simulation, a collision is when an H₂O₂ molecule hits the enzyme.'},
+ {k:'activation-energy', term:'Activation energy', short:'The energy needed to start a reaction.',
+  plain:'Particles must collide with at least this much energy for a reaction to happen. Warmer particles move faster and have more energy. Enzymes lower the amount of energy needed.',
+  parts:[['activate','to start'],['energy','the ability to cause change']], like:'The push it takes to get a ball over a hill. A lower hill takes a smaller push.', lab:'Iced particles move slowly, so fewer collisions have enough energy.'},
+ {k:'denature', term:'Denature', short:'To lose the natural 3D shape of a protein.',
+  plain:'Too much heat, or a big change in pH, can unfold a protein. A denatured enzyme has a different shape, so its active site no longer fits the substrate.',
+  parts:[['de-','undo or remove'],['nature','natural form']], like:'Cooking an egg. The clear part turns solid white because the proteins change shape and cannot change back.', lab:'The boiled catalase was denatured, so H₂O₂ could not fit and no oxygen formed.'},
+ {k:'reaction-rate', term:'Reaction rate', short:'How fast a reaction makes products.',
+  plain:'A faster reaction makes more products in less time. In this lab, we measure rate by how long a sphere takes to rise.',
+  parts:[['reaction','a chemical change'],['rate','speed']], like:'Miles per hour, but for chemistry.', lab:'A shorter rise time means a faster reaction rate.'},
+ {k:'buoyant', term:'Buoyant', short:'Able to float.',
+  plain:'Something is buoyant when the liquid pushes it upward more than gravity pulls it down.',
+  parts:[['buoy','a floating marker in water'],['-ant','having this quality']], like:'A life jacket.', lab:'Oxygen bubbles stick to the sphere and make it buoyant, so it floats up.'},
+ {k:'average', term:'Average (mean)', short:'The sum of the values divided by how many there are.',
+  plain:'Add up all the trials, then divide by the number of trials. Averages help you trust your data more than one trial alone.',
+  parts:[['sum','all the values added together'],['÷ count','divide by how many values']], like:'Splitting everything evenly.', lab:'(Trial 1 + Trial 2 + Trial 3) ÷ 3.'},
+ {k:'claim', term:'Claim', short:'A statement that answers the question.',
+  plain:'A claim says what you found. It should match your data.',
+  parts:[['claim','to say that something is true']], like:'The headline of a news story.', lab:'Room temperature catalase worked fastest. Iced worked slowly. Boiled did not work.'},
+ {k:'evidence', term:'Evidence', short:'Data or observations that support a claim.',
+  plain:'Evidence comes from an investigation: numbers, measurements, or observations. Background facts are not evidence.',
+  parts:[['e-','out'],['-vident','seen']], like:'The proof in a courtroom.', lab:'The rise times from Card A are the evidence.'},
+ {k:'reasoning', term:'Reasoning', short:'The science that explains why the evidence supports the claim.',
+  plain:'Reasoning connects the evidence to the claim using scientific ideas, like collisions, energy, and enzyme shape.',
+  parts:[['reason','to think something through']], like:'The “because” part of an answer.', lab:'The boiled catalase made no oxygen because its shape changed.'}
+];
+function buildGlossary(){
+  const root = el('div', {class:'gloss'});
+  const search = el('input', {type:'search', class:'gsearch', placeholder:'Search for a word…', 'aria-label':'Search for a word'});
+  const list = el('div', {class:'glist'});
+  const row = (label, text) => el('div', {class:'grow'}, el('h4', null, label), el('p', null, text));
+  const items = GLOSS.map(g => {
+    const d = el('details', {class:'gcard', 'data-k':g.k});
+    const body = el('div', {class:'gbody'},
+      row('In plain words', g.plain),
+      el('div', {class:'grow'}, el('h4', null, 'Break it down'), el('div', {class:'parts'}, g.parts.map(p => el('span', {class:'part'}, el('b', null, p[0]), ' = ' + p[1])))),
+      row('Think of it like', g.like),
+      row('In this lab', g.lab),
+      TTS.ok ? el('div', {class:'nospeak', style:'margin-top:10px'}, el('button', {class:'btn small', type:'button', onClick:() => readEl(d)}, '🔊 Read this word')) : null);
+    d.append(el('summary', null, el('span', {class:'gterm'}, g.term), el('span', {class:'gshort'}, g.short)), body);
+    list.append(d);
+    return {g, d};
+  });
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    items.forEach(({g, d}) => { d.hidden = !!q && !(g.term + ' ' + g.short + ' ' + g.plain).toLowerCase().includes(q); });
+  });
+  root.append(search, list);
+  return {root, open(k){
+    search.value = ''; items.forEach(({d}) => { d.hidden = false; });
+    const it = items.find(i => i.g.k === k);
+    items.forEach(i => { i.d.open = false; });
+    if (it){ it.d.open = true; setTimeout(() => it.d.scrollIntoView({block:'nearest'}), 40); }
+  }};
+}
+const dlg = el('dialog', {class:'gdlg', 'aria-label':'Word help'});
+const gDlg = buildGlossary();
+dlg.append(
+  el('div', {class:'dhead'}, el('h2', null, '📖 Word help'), el('button', {class:'btn small', type:'button', onClick:() => dlg.close()}, 'Close')),
+  el('div', {class:'dbody'}, gDlg.root));
+dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+dlg.addEventListener('close', stopSpeech);
+document.body.append(dlg);
+const gSup = buildGlossary();
+function supportOpen(){ return location.hash === '#word-help'; }
+function openGlossary(k){
+  if (supportOpen()){ gSup.open(k); return; }
+  gDlg.open(k);
+  if (typeof dlg.showModal === 'function'){ if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', '');
+}
+function helpBtn(gk, label){ return el('button', {class:'helpbtn nospeak', type:'button', onClick:() => openGlossary(gk)}, '📖 ' + (label || 'Word help')); }
+function withHelp(block, gk, label){ return next => { const e = block(next); if (e) e.append(helpBtn(gk, label)); return e; }; }
+
+(function setupSupportView(){
+  const sup = document.getElementById('support');
+  const top = el('div', {class:'support-top'},
+    el('h2', null, '📖 Word Help'),
+    el('button', {class:'btn', type:'button', onClick:() => { location.hash = ''; }}, '← Back to the activity'));
+  sup.append(top,
+    el('div', {class:'callout', style:'margin-bottom:14px', html:'<h3>Key words for #10 Modeling Enzymes</h3><p>Each word has a plain-language meaning, a word-parts breakdown, a comparison, and how it shows up in this lab. Tap a word to open it. Use 🔊 to hear it read aloud.</p>'}),
+    gSup.root);
+  const act = document.getElementById('activity'), bw = document.getElementById('btnWords'), bb = document.getElementById('btnBack');
+  function route(){
+    const s = supportOpen();
+    act.hidden = s; sup.hidden = !s; bw.hidden = s; bb.hidden = !s;
+    document.getElementById('progress').hidden = s || maxReached < 0;
+    stopSpeech();
+    window.scrollTo({top:0});
+  }
+  bb.addEventListener('click', () => { location.hash = ''; });
+  bw.addEventListener('click', () => openGlossary());
+  window.addEventListener('hashchange', route);
+  window.__route = route;
+})();
+
+/* ====================== SEQUENCE RUNNER ====================== */
+function runSeq(container, blocks, onFinish){
+  function run(i){
+    if (i >= blocks.length){ onFinish && onFinish(); return; }
+    let called = false;
+    const go = () => { if (called) return; called = true; setTimeout(() => run(i + 1), 220); };
+    const e = blocks[i](go);
+    if (e){
+      e.classList.add('block', 'appear');
+      if (TTS.ok) e.prepend(el('button', {class:'spk nospeak', type:'button', 'aria-label':'Read this step out loud', onClick:() => readEl(e)}, '🔊'));
+      container.append(e);
+      const vis = container.offsetParent !== null;
+      if (i > 0 && vis) e.scrollIntoView({block:'nearest', behavior: reduce ? 'auto' : 'smooth'});
+      if (TTS.on && TTS.auto && vis) readEl(e, {queue:true});
+    }
+  }
+  run(0);
+}
+
+/* ====================== BLOCK BUILDERS ====================== */
+function info({title, html, tag}){
+  return next => {
+    const e = el('div', {class:'callout'},
+      title ? el('h3', {html: (tag ? tag + ' ' : '') + title}) : null,
+      el('div', {html}));
+    next();
+    return e;
+  };
+}
+function draw({title='On your desk', steps, prompt, note, absent, btn='I drew it'}){
+  return next => {
+    const box = el('div', {class:'draw'});
+    box.append(el('div', {class:'tg', html:'✏️ ' + title}));
+    if (prompt) box.append(el('div', {html:prompt}));
+    if (steps) box.append(el('ol', null, steps.map(s => el('li', {html:s}))));
+    if (note) box.append(el('div', {html:note}));
+    if (absent) box.append(el('div', {class:'absent', html:'📄 <b>Were you absent?</b> Draw this on a sheet of paper instead. Use two colors of pen or pencil.'}));
+    const b = el('button', {class:'btn primary', type:'button', style:'margin-top:10px', onClick:() => {
+      b.disabled = true; b.textContent = '✔ Done'; next();
+    }}, btn);
+    box.append(b);
+    return box;
+  };
+}
+function mcq({q, options, correct, right, wrong, key, onRight}){
+  return next => {
+    const box = el('div', {class:'q'});
+    box.append(el('p', {class:'qtext', html:q}));
+    const list = el('div', {class:'opts', role:'group'});
+    const fb = el('div', {class:'fb', 'aria-live':'polite'});
+    options.forEach((o, i) => {
+      const b = el('button', {class:'opt', type:'button', onClick:() => {
+        if (box.dataset.done) return;
+        if (i === correct){
+          box.dataset.done = '1';
+          b.classList.add('right');
+          list.querySelectorAll('button').forEach(x => { x.disabled = true; if (x !== b && !x.classList.contains('wrong')) x.classList.add('dim'); });
+          fb.className = 'fb ok'; fb.innerHTML = '✅ ' + right;
+          if (key) S.answers[key] = o;
+          onRight && onRight();
+          next();
+        } else {
+          b.classList.add('wrong'); b.disabled = true;
+          fb.className = 'fb no';
+          fb.innerHTML = '❌ ' + (Array.isArray(wrong) ? wrong[i] : wrong);
+        }
+      }}, o);
+      list.append(b);
+    });
+    box.append(list, fb);
+    return box;
+  };
+}
+function choice({q, options, key, after}){
+  return next => {
+    const box = el('div', {class:'q'});
+    box.append(el('p', {class:'qtext', html:q}));
+    const list = el('div', {class:'opts', role:'group'});
+    const fb = el('div', {class:'fb tip', 'aria-live':'polite'});
+    options.forEach((o, i) => {
+      const b = el('button', {class:'opt', type:'button', onClick:() => {
+        if (box.dataset.done) return;
+        box.dataset.done = '1';
+        b.classList.add('picked');
+        list.querySelectorAll('button').forEach(x => { x.disabled = true; if (x !== b) x.classList.add('dim'); });
+        if (key) S.answers[key] = o;
+        const msg = after ? after(i, o) : '';
+        if (msg) fb.innerHTML = msg;
+        next();
+      }}, o);
+      list.append(b);
+    });
+    box.append(list, fb);
+    return box;
+  };
+}
+function vocab({term, def, add, key, gk}){
+  return withHelp(choice({
+    q:`<b>${term}</b>: ${def}<br>Was this in your drawing?`,
+    options:['Yes, I drew it and labeled it', 'I drew it, but I did not label it', 'No, it is missing'],
+    key:'v_' + key,
+    after:i => i === 0 ? '👍 Good. Check that your label points to the right part.'
+      : i === 1 ? `🔧 Add the label now in ${C2}.`
+      : `🔧 Add it now in ${C2}. ${add}`
+  }), gk, 'Word help: ' + term);
+}
+function match({q, items, options, okMsg}){
+  return next => {
+    const box = el('div', {class:'q'});
+    box.append(el('p', {class:'qtext', html:q}));
+    const grid = el('div', {class:'match'});
+    const rows = items.map(it => {
+      const sel = el('select', {'aria-label': it.label.replace(/<[^>]+>/g,'')},
+        el('option', {value:''}, 'Choose…'),
+        options.map(o => el('option', {value:o}, o)));
+      grid.append(el('label', {class:'mrow'}, el('span', {html:it.label}), sel));
+      return {it, sel};
+    });
+    const fb = el('div', {class:'fb', 'aria-live':'polite'});
+    const btn = el('button', {class:'btn primary', type:'button', onClick:() => {
+      let all = true;
+      rows.forEach(r => {
+        const ok = r.sel.value === r.it.answer;
+        r.sel.classList.toggle('good', ok);
+        r.sel.classList.toggle('bad', !ok && r.sel.value !== '');
+        if (!ok) all = false;
+      });
+      if (all){
+        fb.className = 'fb ok'; fb.innerHTML = '✅ ' + okMsg;
+        btn.disabled = true; rows.forEach(r => r.sel.disabled = true);
+        next();
+      } else {
+        fb.className = 'fb no'; fb.textContent = '❌ Not yet. Fix the red ones and check again.';
+      }
+    }}, 'Check my matches');
+    box.append(grid, btn, fb);
+    return box;
+  };
+}
+function revealBoard(layers, msg){
+  const idx = cur;
+  return next => {
+    (stageLayers[idx] = stageLayers[idx] || []).push(...layers);
+    if (cur === idx) applyBoard(idx);
+    board.classList.remove('pulse'); void board.offsetWidth; board.classList.add('pulse');
+    const e = el('div', {class:'callout board-note'},
+      el('span', {html:'📋 <b>The Model Board has new parts.</b> ' + msg}),
+      el('button', {class:'btn small jump nospeak', type:'button', onClick:() => board.scrollIntoView({block:'start', behavior: reduce ? 'auto' : 'smooth'})}, 'See the board ↓'));
+    next();
+    return e;
+  };
+}
+function compare(key){
+  return choice({
+    q:'Does your desk now match the Model Board?',
+    options:['Yes, it matches', 'Almost. I fixed it in Color 2'],
+    key,
+    after:i => i === 0 ? '👍 Nice work.' : '👍 Good. Fixing your model is part of the job.'
+  });
+}
+function cardTest(letter, tip){
+  return choice({
+    q:`<b>Card ${letter} test:</b> Does your model explain this card?`,
+    options:['My model explains this', 'My model does NOT explain this yet'],
+    after:i => {
+      S.cards[letter] = i === 0 ? 'explains' : 'revised';
+      return i === 0
+        ? '✅ Your model held up. Check it against the board to be sure.'
+        : `🔧 That is okay. Changing a model when new evidence appears is exactly how scientists work. ${tip} Use ${C2}.`;
+    }
+  });
+}
+
+/* ====================== REACTION SIMULATION ====================== */
+const MODES = {
+  iced:   {label:'Iced',             speed:1.0, p:0.20, ok:true,  note:'Iced catalase and iced H₂O₂'},
+  room:   {label:'Room temperature', speed:2.6, p:0.85, ok:true,  note:'Room-temperature catalase and H₂O₂'},
+  boiled: {label:'Boiled enzyme',    speed:2.6, p:0,    ok:false, note:'Boiled catalase and room-temperature H₂O₂'}
+};
+function makeSim(keys, onDone){
+  const W = 560, H = 320, R = 28, HIT = 36, N = 14, DUR = 15000;
+  const ENZ = [{x:130,y:95},{x:335,y:215},{x:455,y:85}];
+  const canvas = el('canvas', {width:W*2, height:H*2, role:'img', 'aria-label':'Particle model. Hydrogen peroxide molecules move around three catalase enzymes. Reactions show a check mark. Bounces show an X.'});
+  const ctx = canvas.getContext('2d'); ctx.scale(2, 2);
+  let mode = keys[0], running = false, startT = 0, counts = {col:0, rx:0}, parts = [], prods = [], flashes = [];
+  let bg = '#17124a', frame = 0, last = performance.now();
+  const speedNow = () => MODES[mode].speed;
+  function spawn(){
+    let x, y, t = 0;
+    do { x = 20 + Math.random()*(W-40); y = 20 + Math.random()*(H-40); t++; }
+    while (t < 30 && ENZ.some(e => Math.hypot(e.x-x, e.y-y) < HIT + 22));
+    const a = Math.random()*Math.PI*2, s = speedNow()*(0.7 + Math.random()*0.6);
+    return {x, y, vx:Math.cos(a)*s, vy:Math.sin(a)*s, ang:Math.random()*6.28, spin:(Math.random()-.5)*0.08, cool:0};
+  }
+  for (let i = 0; i < N; i++) parts.push(spawn());
+
+  const modeBtns = keys.map(k => el('button', {class:'opt' + (k === mode ? ' picked' : ''), type:'button', 'aria-pressed': k === mode ? 'true' : 'false', onClick:() => setMode(k)}, MODES[k].label));
+  const runBtn = el('button', {class:'btn primary', type:'button', onClick:() => {
+    if (running) return;
+    running = true; startT = performance.now(); counts = {col:0, rx:0}; lock(true);
+  }}, '▶ Run 15 seconds');
+  const stCol = el('b', null, '0'), stRx = el('b', null, '0'), stT = el('b', null, '15');
+  const stats = el('div', {class:'stats nospeak'},
+    el('span', null, 'Collisions: ', stCol), el('span', null, 'Reactions: ', stRx), el('span', null, 'Time left: ', stT, ' s'));
+  const tbody = el('tbody');
+  const table = el('table', {class:'res', 'data-speak':'The results table fills in after each run.'}, el('thead', null, el('tr', null, el('th', null, 'Condition'), el('th', null, 'Collisions'), el('th', null, 'Reactions that made products'))), tbody);
+  const note = el('p', {class:'small'}, MODES[mode].note);
+  function drawTable(){
+    tbody.innerHTML = '';
+    keys.forEach(k => {
+      const r = S.sim[k];
+      tbody.append(el('tr', null, el('td', null, MODES[k].label), el('td', null, r ? String(r.col) : '—'), el('td', null, r ? String(r.rx) : '—')));
+    });
+  }
+  drawTable();
+  function lock(on){ modeBtns.forEach(b => b.disabled = on); runBtn.disabled = on; }
+  function setMode(k){
+    if (running || k === mode) return;
+    const k2 = MODES[k].speed / MODES[mode].speed;
+    parts.forEach(p => { p.vx *= k2; p.vy *= k2; });
+    mode = k;
+    modeBtns.forEach((b, i) => { const on = keys[i] === k; b.classList.toggle('picked', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    note.textContent = MODES[k].note;
+  }
+  function hit(p, en){
+    const m = MODES[mode];
+    if (running) counts.col++;
+    if (m.ok && Math.random() < m.p){
+      if (running) counts.rx++;
+      for (let i = 0; i < 3; i++){
+        prods.push({x:p.x, y:p.y, vx:(Math.random()-.5)*1.6 + (i===0?-.5:i===1?.5:0), vy: i===2 ? -1.1 : (Math.random()-.5)*1.2, age:0, o2:i===2});
+      }
+      flashes.push({x:p.x, y:p.y, age:0, ok:true});
+      Object.assign(p, spawn());
+    } else {
+      const dx = p.x - en.x, dy = p.y - en.y, d = Math.hypot(dx, dy) || 1, sp = Math.hypot(p.vx, p.vy);
+      p.vx = dx/d*sp; p.vy = dy/d*sp; p.x = en.x + dx/d*(HIT+2); p.y = en.y + dy/d*(HIT+2); p.cool = 25;
+      flashes.push({x:p.x, y:p.y, age:0, ok:false});
+    }
+  }
+  function update(dt){
+    for (const p of parts){
+      p.x += p.vx*dt; p.y += p.vy*dt; p.ang += p.spin*dt;
+      if (p.cool > 0) p.cool -= dt;
+      if (p.x < 10){p.x = 10; p.vx = Math.abs(p.vx);} if (p.x > W-10){p.x = W-10; p.vx = -Math.abs(p.vx);}
+      if (p.y < 10){p.y = 10; p.vy = Math.abs(p.vy);} if (p.y > H-10){p.y = H-10; p.vy = -Math.abs(p.vy);}
+      if (p.cool <= 0) for (const en of ENZ){ if (Math.hypot(p.x-en.x, p.y-en.y) < HIT){ hit(p, en); break; } }
+    }
+    prods.forEach(q => { q.x += q.vx*dt; q.y += q.vy*dt; q.age += dt; });
+    prods = prods.filter(q => q.age < 110);
+    flashes.forEach(f => f.age += dt);
+    flashes = flashes.filter(f => f.age < 38);
+  }
+  function enzyme(en){
+    const m = MODES[mode];
+    ctx.save(); ctx.translate(en.x, en.y);
+    if (m.ok){
+      ctx.fillStyle = '#5fbf7a'; ctx.strokeStyle = '#c9f6e0'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = bg;
+      ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(-13, -R-3, 26, 17, 7); else ctx.rect(-13, -R-3, 26, 17); ctx.fill();
+    } else {
+      ctx.fillStyle = '#b9a77a'; ctx.strokeStyle = '#f0e2b8'; ctx.lineWidth = 3; ctx.setLineDash([6,4]);
+      ctx.beginPath();
+      for (let a = 0; a <= Math.PI*2 + .05; a += .15){
+        const r = R + Math.sin(a*4)*4; const x = Math.cos(a)*r, y = Math.sin(a)*r;
+        a === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle = '#7d6c44'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(-4, -R+4); ctx.lineTo(10, -R+14); ctx.lineTo(2, -R+22); ctx.stroke();
+    }
+    ctx.restore();
+    ctx.fillStyle = '#fff'; ctx.font = '600 12px Lexend, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(m.ok ? 'catalase' : 'denatured', en.x, en.y + R + 16);
+  }
+  function render(){
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    ENZ.forEach(enzyme);
+    for (const q of prods){
+      ctx.globalAlpha = Math.max(0, 1 - q.age/110);
+      if (q.o2){ ctx.fillStyle = '#ffffff'; ctx.strokeStyle = SUB2; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(q.x, q.y, 6, 0, 7); ctx.fill(); ctx.stroke(); }
+      else { ctx.fillStyle = '#9fc8ff'; ctx.beginPath(); ctx.arc(q.x, q.y, 5, 0, 7); ctx.fill(); }
+    }
+    ctx.globalAlpha = 1;
+    for (const p of parts){
+      const ox = Math.cos(p.ang)*6, oy = Math.sin(p.ang)*6;
+      ctx.fillStyle = SUB1; ctx.beginPath(); ctx.arc(p.x-ox, p.y-oy, 6, 0, 7); ctx.fill();
+      ctx.fillStyle = SUB2; ctx.beginPath(); ctx.arc(p.x+ox, p.y+oy, 6, 0, 7); ctx.fill();
+    }
+    ctx.textAlign = 'center'; ctx.font = '700 15px Lexend, sans-serif';
+    for (const f of flashes){
+      ctx.globalAlpha = 1 - f.age/38;
+      if (f.ok){ ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(f.x, f.y, 10 + f.age*0.6, 0, 7); ctx.stroke(); ctx.fillStyle = '#ffd23f'; ctx.fillText('✓ reaction', f.x, f.y - 16 - f.age*0.3); }
+      else { ctx.strokeStyle = '#b5aee0'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(f.x, f.y, 8 + f.age*0.4, 0, 7); ctx.stroke(); ctx.fillStyle = '#d5cffb'; ctx.fillText('✗', f.x, f.y - 12 - f.age*0.3); }
+    }
+    ctx.globalAlpha = 1;
+  }
+  function tick(){
+    if (!canvas.isConnected) return;
+    if (canvas.offsetParent === null){
+      const t0 = performance.now(); if (running) startT += t0 - last; last = t0;
+      requestAnimationFrame(tick); return;
+    }
+    const now = performance.now(); const dt = Math.min(3, (now - last)/16.67); last = now;
+    update(dt); render();
+    stCol.textContent = counts.col; stRx.textContent = counts.rx;
+    if (running){
+      const left = Math.max(0, DUR - (now - startT));
+      stT.textContent = Math.ceil(left/1000);
+      if (left <= 0){
+        running = false; S.sim[mode] = {col:counts.col, rx:counts.rx};
+        lock(false); stT.textContent = '15'; drawTable(); onDone && onDone(mode);
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  return el('div', {class:'sim'},
+    el('div', {class:'simctl'}, el('span', {class:'small'}, 'Pick a condition:'), modeBtns),
+    note, canvas, stats,
+    el('div', {class:'simctl'}, runBtn),
+    table,
+    el('p', {class:'legend', html:'<b>Key:</b> A blue and teal pair is one H₂O₂ molecule (the substrate). The green blob is catalase. The tan blob is denatured catalase. “✓ reaction” means products were made. “✗” means the molecule bounced off with no reaction. White bubbles are oxygen. This is a model: it shows the idea, but the counts are not real lab data.'}));
+}
+
+/* ====================== LOCK AND KEY ====================== */
+function lockKey(next){
+  const HOME = {sa:'translate(320px,52px)', sb:'translate(320px,132px)', sc:'translate(320px,212px)'};
+  const wrap = el('div', {class:'lock'});
+  wrap.innerHTML = `
+  <svg viewBox="0 0 420 270" role="img" aria-label="Catalase with an active site pocket and three shapes to try: an H2O2 pair, a triangle, and a square">
+    <defs><mask id="lm" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="270">
+      <rect x="0" y="0" width="420" height="270" fill="#fff"/><rect x="80" y="90" width="60" height="38" rx="14" fill="#000"/></mask></defs>
+    <circle cx="110" cy="160" r="62" fill="#5fbf7a" stroke="#0fa97a" stroke-width="3" mask="url(#lm)"/>
+    <text class="t" x="110" y="248" font-size="14" font-weight="600" text-anchor="middle">catalase</text>
+    <text class="t" x="68" y="82" font-size="13" font-weight="600" text-anchor="end">active site</text>
+    <g id="sa" style="transform:${HOME.sa}"><circle cx="-14" cy="0" r="14" fill="${SUB1}"/><circle cx="14" cy="0" r="14" fill="${SUB2}"/></g>
+    <g id="sb" style="transform:${HOME.sb}"><polygon points="-23,18 23,18 0,-22" fill="#ff7fb0" stroke="#c2366b" stroke-width="3"/></g>
+    <g id="sc" style="transform:${HOME.sc}"><rect x="-20" y="-20" width="40" height="40" fill="#ffd23f" stroke="#b8821b" stroke-width="3"/></g>
+  </svg>`;
+  const cap = el('div', {class:'cap', 'aria-live':'polite'}, 'Press a button to try a shape.');
+  const tried = new Set(); let busy = false;
+  async function tryShape(id, fits, btn){
+    if (busy) return; busy = true;
+    const g = wrap.querySelector('#' + id);
+    g.style.transition = reduce ? 'none' : 'transform .8s ease';
+    g.style.transform = fits ? 'translate(110px,110px)' : 'translate(110px,62px)';
+    cap.textContent = 'Trying…';
+    await sleep(reduce ? 50 : 900);
+    if (fits){
+      cap.textContent = '✅ It fits! The reaction can happen.';
+      await sleep(1400);
+    } else {
+      cap.textContent = '❌ It does not fit. It bounces away.';
+      if (!reduce) for (const dx of [96, 124, 100, 120]){ g.style.transition = 'transform .12s'; g.style.transform = `translate(${dx}px,62px)`; await sleep(130); }
+      await sleep(400);
+    }
+    g.style.transition = reduce ? 'none' : 'transform .8s ease'; g.style.transform = HOME[id];
+    await sleep(reduce ? 50 : 850);
+    tried.add(id); btn.classList.add('picked'); busy = false;
+    if (tried.size === 3){ cap.textContent = 'You tried all three. Only one fit.'; next(); }
+    else cap.textContent = 'Try another shape.';
+  }
+  const btns = el('div', {class:'simctl'});
+  [['sa', true, 'Try the H₂O₂ pair'], ['sb', false, 'Try the triangle'], ['sc', false, 'Try the square']].forEach(([id, fits, label]) => {
+    const b = el('button', {class:'opt', type:'button', onClick:() => tryShape(id, fits, b)}, label);
+    btns.append(b);
+  });
+  wrap.append(cap, btns);
+  return wrap;
+}
+
+/* ====================== DATA CARD + CHART ====================== */
+const avg = a => Math.round(a.reduce((x, y) => x + y, 0) / a.length);
+function dataCard(){
+  return next => {
+    const wrap = el('div', {class:'chart', 'data-speak':`Data table. Iced trials: ${DATA.iced.join(', ')} seconds. Room temperature trials: ${DATA.room.join(', ')} seconds. Boiled: did not rise within ${DATA.limit} seconds.`});
+    const table = el('table', {class:'res', id:'datatable'},
+      el('thead', null, el('tr', null, ['Condition','Trial 1','Trial 2','Trial 3','Average (s)'].map(h => el('th', null, h)))),
+      el('tbody', null,
+        el('tr', null, el('td', null, 'Iced'), DATA.iced.map(v => el('td', null, String(v))), el('td', null, '?')),
+        el('tr', null, el('td', null, 'Room'), DATA.room.map(v => el('td', null, String(v))), el('td', null, '?')),
+        el('tr', null, el('td', null, 'Boiled'), el('td', {colspan:'4'}, `Did not rise within ${DATA.limit} seconds`))));
+    wrap.append(table);
+    next();
+    return wrap;
+  };
+}
+function chartBlock(){
+  return next => {
+    const aI = avg(DATA.iced), aR = avg(DATA.room);
+    const y = v => 200 - (v / DATA.limit) * 170;
+    const wrap = el('div', {class:'chart'});
+    wrap.innerHTML = `
+    <svg viewBox="0 0 420 270" role="img" aria-label="Bar chart of average seconds to rise. Iced: ${aI} seconds. Room temperature: ${aR} seconds. Boiled: did not rise in ${DATA.limit} seconds.">
+      <defs><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#8a8396" stroke-width="2"/></pattern></defs>
+      ${[0,40,80,120].map(v => `<line class="gridl" x1="50" y1="${y(v)}" x2="400" y2="${y(v)}"/><text class="t" x="44" y="${y(v)+4}" font-size="12" text-anchor="end">${v}</text>`).join('')}
+      <text class="t" x="14" y="115" font-size="13" transform="rotate(-90 14 115)" text-anchor="middle">Seconds to rise</text>
+      <rect x="80" y="${y(aI)}" width="70" height="${200 - y(aI)}" fill="#6fb7ff" stroke="#2f7bff" stroke-width="3" rx="4"/>
+      <text class="t" x="115" y="${y(aI)-6}" font-size="14" font-weight="600" text-anchor="middle">${aI} s</text>
+      <rect x="190" y="${y(aR)}" width="70" height="${200 - y(aR)}" fill="#ffc46b" stroke="#ff9a1f" stroke-width="3" rx="4"/>
+      <text class="t" x="225" y="${y(aR)-6}" font-size="14" font-weight="600" text-anchor="middle">${aR} s</text>
+      <rect x="300" y="${y(DATA.limit)}" width="70" height="${200 - y(DATA.limit)}" fill="url(#hatch)" stroke="#8a8396" stroke-width="2" stroke-dasharray="6 4" rx="4"/>
+      <text class="t" x="335" y="${y(DATA.limit)-6}" font-size="12" font-weight="600" text-anchor="middle">no rise</text>
+      <line class="ln" x1="50" y1="200" x2="400" y2="200"/><line class="ln" x1="50" y1="30" x2="50" y2="200"/>
+      <text class="t" x="115" y="222" font-size="14" text-anchor="middle">Iced</text>
+      <text class="t" x="225" y="222" font-size="14" text-anchor="middle">Room</text>
+      <text class="t" x="335" y="222" font-size="14" text-anchor="middle">Boiled</text>
+      <text class="t" x="225" y="250" font-size="12" text-anchor="middle">Dashed bar = did not rise in ${DATA.limit} s (not a time)</text>
+    </svg>`;
+    next();
+    return wrap;
+  };
+}
+
+/* ====================== CER ====================== */
+const BANK = ['proteins','speed up','collide','energy','activation energy','active site','slowly','denatured','shape'];
+const REASON = [
+  ['Enzymes are ', 0, ' that ', 1, ' reactions in living things. A reaction happens when particles ', 2, ' with enough ', 3, '. This minimum energy is called ', 4, '.'],
+  ['The room temperature catalase worked fastest. Its ', 5, ' fit the substrate, and the particles collided often.'],
+  ['The iced catalase worked slowly. The particles moved ', 6, ', so fewer collisions had enough energy.'],
+  ['The boiled catalase made no oxygen. The enzyme ', 7, ', so its ', 8, ' changed. The substrate no longer fit.']
+];
+const shuffled = arr => arr.map(w => [Math.random(), w]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+function reasoningBlock(){
+  return next => {
+    const box = el('div', {class:'q'});
+    box.append(el('p', {class:'qtext', html:'<b>Reasoning:</b> Fill in each blank with a word from the word bank. Use each word once.'}));
+    box.append(el('div', {class:'skills nospeak'}, shuffled(BANK).map(w => el('span', null, w))));
+    const sels = [];
+    const paras = REASON.map(parts => el('p', null, parts.map(p => {
+      if (typeof p === 'string') return p;
+      const s = el('select', {'aria-label':'Blank ' + (p + 1)}, el('option', {value:''}, '—'), shuffled(BANK).map(w => el('option', {value:w}, w)));
+      sels[p] = s; return s;
+    })));
+    box.append(el('div', {style:'margin-top:12px'}, paras));
+    const fb = el('div', {class:'fb', 'aria-live':'polite'});
+    const btn = el('button', {class:'btn primary', type:'button', onClick:() => {
+      let all = true;
+      sels.forEach((s, i) => { const ok = s.value === BANK[i]; s.classList.toggle('good', ok); s.classList.toggle('bad', !ok && s.value !== ''); if (!ok) all = false; });
+      if (all){
+        sels.forEach(s => s.disabled = true); btn.disabled = true;
+        S.cer.reasoning = REASON.map(parts => parts.map(p => typeof p === 'string' ? p : BANK[p]).join('')).join(' ');
+        fb.className = 'fb ok'; fb.textContent = '✅ Your reasoning is complete.'; next();
+      } else { fb.className = 'fb no'; fb.textContent = '❌ Fix the red blanks. Check the word bank.'; }
+    }}, 'Check my reasoning');
+    box.append(btn, fb);
+    return box;
+  };
+}
+function openBlock({q, ph, min, store}){
+  return next => {
+    const box = el('div', {class:'q'});
+    box.append(el('p', {class:'qtext', html:q}));
+    const ta = el('textarea', {placeholder:ph, 'aria-label':'Your answer'});
+    const fb = el('div', {class:'fb', 'aria-live':'polite'});
+    const btn = el('button', {class:'btn primary', type:'button', style:'margin-top:8px', onClick:() => {
+      const v = ta.value.trim();
+      if (v.length < min){ fb.className = 'fb no'; fb.textContent = `❌ Write a little more (at least ${min} letters).`; return; }
+      store(v); ta.disabled = true; btn.disabled = true; fb.className = 'fb ok'; fb.textContent = '✅ Saved.'; next();
+    }}, 'Save my answer');
+    box.append(ta, btn, fb);
+    return box;
+  };
+}
+
+/* ====================== STAGES ====================== */
+function predict(html, steps){ return draw({title:'Predict first: add to your model', prompt:html, steps, btn:'I added it'}); }
+function predCheck(n){
+  return choice({
+    q:'Look at what you added at the start of this stage. Did it hold up?',
+    options:['✔ Yes. It matched the evidence','Partly. Some of it was right','No. It did not match the evidence'],
+    key:'p' + n,
+    after:i => i === 0 ? '👍 Put a ✔ next to it on your desk.'
+      : i === 1 ? `🔧 Put a ✔ next to the part that was right. Cross out the part that was wrong and redraw it in ${C2}.`
+      : `🔧 Cross it out with an X and redraw it in ${C2}. Being wrong is useful. It means your model just got better.`
+  });
+}
+
+const STAGES = [
+{ c:'pink', cycle:'Draw', skill:'Modeling', title:'Draw your first model',
+  mission:'Put what you already know on your desk. A rough first draft is exactly what we need.',
+  blocks:() => [
+  info({tag:'🧪', title:'Your challenge', html:`<p>Hydrogen peroxide (H₂O₂) is a harmful by-product of reactions in your cells. An enzyme called <b>catalase</b> breaks it down into safer molecules.</p>`}),
+  draw({title:`Draw it in ${C1}`, absent:true, prompt:`<p><b>Draw a model that shows how catalase breaks down H₂O₂.</b></p><p>Show what goes in, what happens, and what comes out. Label what you can. Use what you already know. It is fine to be unsure. This is only a first draft.</p>`}),
+  choice({q:'How sure are you about your model right now?', options:['Not sure','Kind of sure','Very sure'], key:'conf0',
+    after:() => 'Thanks. Now you will test your model and improve it.'})
+]},
+{ c:'blue', cycle:'Check', skill:'Scientific vocabulary', title:'Check your model: key words',
+  mission:'Find out which key ideas your first draft already had. Add anything that was missing.',
+  blocks:() => [
+  info({title:'Key word check', html:`<p>Scientists use precise vocabulary to describe a reaction. For each word below, tell us whether it was already in your drawing. If it was missing, add it in ${C2}. Tap <b>📖 Word help</b> if a term is new.</p>`}),
+  vocab({key:'enzyme', gk:'enzyme', term:'Enzyme', def:'A protein that speeds up a chemical reaction without being used up. Here, it is catalase.', add:'Draw the enzyme and label it <b>catalase</b>.'}),
+  vocab({key:'substrate', gk:'substrate', term:'Substrate', def:'The molecule an enzyme acts on. Here, it is hydrogen peroxide (H₂O₂).', add:'Draw the substrate and label it <b>H₂O₂</b>.'}),
+  vocab({key:'products', gk:'product', term:'Products', def:'The new molecules a reaction makes. Here, they are water (H₂O) and oxygen (O₂).', add:'Show them coming out of the reaction and label them.'}),
+  info({title:'The full reaction', html:`<p class="eq">2H₂O₂ → 2H₂O + O₂</p><p>Catalase speeds this reaction up, but it is not used up. That is why it does not appear in the equation.</p>`}),
+  match({q:'Match each part of the reaction to its word.', options:['enzyme','substrate','products'],
+    items:[{label:'Catalase', answer:'enzyme'}, {label:'H₂O₂', answer:'substrate'}, {label:'Water and oxygen', answer:'products'}],
+    okMsg:'All three matches are right.'}),
+  mcq({q:'True or false: After the reaction, catalase is used up.', options:['True','False'], correct:1,
+    right:'Correct. Enzymes are not used up. They can work again and again.', wrong:'Enzymes can be reused. Try again.'}),
+  revealBoard(['start','terms','products'], 'Compare it to your desk.'),
+  compare('c2')
+]},
+{ c:'green', cycle:'Predict + Test', skill:'Testing a model', title:'Test your model: the shape idea',
+  mission:'Predict first. Then test whether your model explains why an enzyme works on one molecule but not others.',
+  blocks:() => [
+  predict(`<p>Before we test anything, add to your model.</p>`, [
+    `In ${C2}, show <b>why</b> catalase can break down H₂O₂ but not other molecules.`,
+    `Think: what part of the enzyme might decide which molecule it works on?`]),
+  info({title:'Now test it: the lock-and-key model', html:`<p>Press each button and watch which shape fits into the pocket on catalase.</p>`}),
+  next => lockKey(next),
+  mcq({q:'Why did only one shape fit?', options:['Only the matching shape fits the pocket','The other shapes were too heavy','The enzyme was too hot'], correct:0,
+    right:'Correct. The pocket matches one shape. That is why enzymes are selective.', wrong:['','Weight did not matter. Shape did.','Temperature was not changed in this test. Look at the shapes.']}),
+  predCheck(3),
+  vocab({key:'site', gk:'active-site', term:'Active site', def:'The pocket on an enzyme where the substrate fits and the reaction happens.', add:'Draw a pocket on your enzyme and label it <b>active site</b>.'}),
+  draw({title:'Finish your drawing', prompt:`<p>In ${C2}, show what happens when the <b>wrong</b> molecule meets catalase.</p>`}),
+  revealBoard(['site'], 'Look for the active site.'),
+  compare('c3')
+]},
+{ c:'orange', cycle:'Predict + Test', skill:'Cause and effect', title:'Test your model: energy and heat',
+  mission:'Predict how temperature changes the reaction. Then use a simulation to see if your model is right.',
+  blocks:() => [
+  predict(`<p>Before the simulation, add to your model how <b>temperature</b> changes the reaction.</p>`, [
+    `In ${C2}, show how iced catalase and iced H₂O₂ would behave.`,
+    `Next to it, show how room-temperature catalase and H₂O₂ would behave.`,
+    `Use arrows, labels, or both. Show how fast the particles move and how often they bump into the enzyme.`]),
+  mcq({q:'Quick check: Iced catalase and iced H₂O₂. How will the particles move?', options:['Slower','Faster','The same'], correct:0,
+    right:'Correct. Cold particles have less energy, so they move slower.', wrong:['','Cold particles do not speed up.','Temperature changes how fast particles move.']}),
+  info({title:'Now test it: the simulation', html:`<ol><li>Pick <b>Iced</b>.</li><li>Press <b>Run 15 seconds</b>.</li><li>Watch the collisions and reactions.</li><li>Pick <b>Room temperature</b>.</li><li>Press <b>Run 15 seconds</b>.</li></ol>`}),
+  next => makeSim(['iced','room'], () => { if (S.sim.iced && S.sim.room) next(); }),
+  mcq({q:'Which condition made more reactions?', options:['Iced','Room temperature'], correct:1,
+    right:'Correct. Room temperature made more products.', wrong:'Look at your results table again.'}),
+  mcq({q:'Why did iced make fewer products?', options:['Slow particles collide less often and with less energy','The enzyme was used up','The substrate turned into a different molecule'], correct:0,
+    right:'Correct. Less energy and fewer collisions means a slower reaction.', wrong:['','Enzymes are not used up.','The substrate was the same. Only the temperature changed.']}),
+  predCheck(4),
+  vocab({key:'collide', gk:'collide', term:'Collide', def:'To bump into each other. The enzyme and substrate must collide to react.', add:'Show the substrate bumping into the enzyme.'}),
+  vocab({key:'ae', gk:'activation-energy', term:'Activation energy', def:'The minimum energy needed to start a reaction. Faster particles have more of it.', add:'Show fast and slow particles. Arrows can help.'}),
+  draw({title:'Finish your drawing', prompt:`<p>In ${C2}, fix anything that was wrong and finish your temperature drawing.</p>`}),
+  revealBoard(['energy'], 'Compare the arrows.'),
+  compare('c4')
+]},
+{ c:'purple', cycle:'Predict + Test', skill:'Analyzing data', title:'Real data: Card A',
+  mission:'Predict what a real lab would show. Then compare your model to real measurements.',
+  blocks:() => [
+  predict(`<p>Before you see any data, add to your model.</p>`, [
+    `In ${C2}, show how you could <b>measure</b> how fast catalase is working. Hint: oxygen bubbles can lift a sphere.`,
+    `Write which condition you think will make a sphere rise first: iced or room temperature.`]),
+  info({tag:'🃏', title:'Card A: Real lab data', html:`<p>A class dropped catalase-soaked spheres into H₂O₂. Oxygen bubbles lift each sphere to the top. The <b>time to rise</b> shows the reaction rate.</p>`}),
+  dataCard(),
+  withHelp(mcq({q:`Find the iced average: (${DATA.iced.join(' + ')}) ÷ 3 = ?`,
+    options:[String(avg(DATA.iced)), String(DATA.iced.reduce((a,b)=>a+b,0)), String(Math.min(...DATA.iced))], correct:0,
+    right:'Correct. Add the trials, then divide by 3.', wrong:['','That is the total. You still need to divide by 3.','That is only the smallest trial. Add all three, then divide.'],
+    onRight:() => { const rows = document.querySelectorAll('#datatable tbody tr'); if (rows.length){ rows[0].lastElementChild.textContent = avg(DATA.iced); rows[1].lastElementChild.textContent = avg(DATA.room); } }}), 'average', 'Word help: average'),
+  chartBlock(),
+  withHelp(mcq({q:'True or false: A sphere that rises in 18 s shows a faster reaction than one that rises in 52 s.', options:['True','False'], correct:0,
+    right:'Correct. A shorter time means a faster rate.', wrong:'A shorter time to rise means the reaction was faster.'}), 'reaction-rate', 'Word help: reaction rate'),
+  mcq({q:'The bubbles that lift the sphere are which part of your model?', options:['The enzyme','The substrate','The products (oxygen)'], correct:2,
+    right:'Correct. Oxygen is a product. More oxygen means the sphere rises sooner.', wrong:['The enzyme does not make bubbles. It speeds up the reaction.','The substrate is what gets broken down.','']}),
+  predCheck(5),
+  cardTest('A', 'Show slow with short arrows and fast with long arrows.')
+]},
+{ c:'pink', cycle:'Predict + Revise', skill:'Revising with evidence', title:'Real data: Card B',
+  mission:'Predict what happens if catalase is boiled. Then revise your model using the evidence.',
+  blocks:() => [
+  predict(`<p>Before you see Card B, add to your model.</p>`, [
+    `In ${C2}, show what you think would happen if the catalase was <b>boiled</b> before it was used.`,
+    `Would it still work? Show why or why not.`]),
+  info({tag:'🃏', title:'Card B: The boiled spheres', html:`<p>Boiled spheres did not rise in ${DATA.limit} seconds. No bubbles lifted them.</p><p>The boiled catalase and the H₂O₂ <b>still bumped into each other</b>.</p>`}),
+  mcq({q:'What should the team write in the data table for the boiled sphere?', options:['0 seconds',`Did not rise within ${DATA.limit} s`,'Leave it blank'], correct:1,
+    right:'Correct. A missing result is not the same as a zero.', wrong:['0 seconds would mean it rose right away.','','A blank looks like a mistake. Say what happened.']}),
+  info({title:'Now test it: the simulation again', html:`<ol><li>Pick <b>Boiled enzyme</b>.</li><li>Press <b>Run 15 seconds</b>.</li><li>Compare the collisions and the reactions.</li></ol>`}),
+  next => makeSim(['iced','room','boiled'], () => { if (S.sim.boiled) next(); }),
+  mcq({q:'In the boiled run, there were collisions but no reactions. Why?', options:['Heat changed the enzyme’s shape, so the substrate no longer fit','The particles were too slow','There was no H₂O₂ left'], correct:0,
+    right:'Correct. The active site changed shape, so the substrate could not fit.', wrong:['','The substrate moved at room speed. It was not slow.','The substrate was still there. It bounced off.']}),
+  predCheck(6),
+  draw({title:'Revise your model', prompt:`<p>In ${C2}, fix your model so it explains the boiled spheres.</p>`}),
+  vocab({key:'denature', gk:'denature', term:'Denatured', def:'When a protein loses its natural shape. A denatured enzyme cannot do its job.', add:'Show an enzyme with a changed shape and label it <b>denatured</b>.'}),
+  revealBoard(['denat'], 'Look at the bent pocket.'),
+  cardTest('B', 'Show an enzyme with a bent pocket and label it <b>denatured</b>.')
+]},
+{ c:'blue', cycle:'Predict + Test', skill:'Evaluating a model', title:'Stress test: Cards C and D',
+  mission:'A strong model survives surprises. Predict two more, then throw them at your model.',
+  blocks:() => [
+  predict(`<p>Before you see the cards, add to your model what you think would happen in these two situations.</p>`, [
+    `In ${C2}, show what happens if the boiled catalase is <b>cooled back down</b> to room temperature.`,
+    `Next to it, show what happens if a <b>different enzyme</b> is mixed with H₂O₂.`]),
+  info({tag:'🃏', title:'Card C: Cooling it back down', html:`<p>A group cooled the boiled catalase back to room temperature and tried again. <b>Still no bubbles.</b></p>`}),
+  cardTest('C', 'Add a note: “The shape changed for good.”'),
+  mcq({q:'Which idea fits Card C best?', options:['The enzyme was asleep and woke up','The enzyme’s shape changed for good','The enzyme ran out of energy and needs a recharge'], correct:1,
+    right:'Correct. Denaturing usually cannot be undone by cooling.', wrong:['Enzymes do not sleep. Heat changed the shape.','','Enzymes do not have a battery. Think about shape.']}),
+  info({tag:'🃏', title:'Card D: A different enzyme', html:`<p>A student mixed <b>amylase</b> with H₂O₂. Amylase is an enzyme that breaks down starch. <b>No bubbles.</b></p>`}),
+  cardTest('D', 'Draw a different-shaped enzyme next to H₂O₂ and show that it does not fit.'),
+  mcq({q:'Which idea fits Card D best?', options:['Amylase’s active site does not fit H₂O₂','Amylase was too cold','H₂O₂ was used up'], correct:0,
+    right:'Correct. Each enzyme fits one kind of substrate.', wrong:['','Nothing said it was cold. Think about shape.','Nothing said H₂O₂ ran out. Think about shape.']}),
+  predCheck(7),
+  revealBoard(['amylase'], 'Check the last part.')
+]},
+{ c:'green', cycle:'Predict + Test', skill:'Applying ideas', title:'Real world: Cards E and F',
+  mission:'Predict how your model explains real life. Then see if it holds up.',
+  blocks:() => [
+  predict(`<p>Before you see the cards, add to your model how it could explain these two real-life events.</p>`, [
+    `In ${C2}, show why H₂O₂ <b>foams</b> when you pour it on a cut.`,
+    `Next to it, show why a <b>very high fever</b> is dangerous for your body.`]),
+  info({tag:'🃏', title:'Card E: A scraped knee', html:`<p>When you pour H₂O₂ on a cut, it <b>foams</b>. Blood and skin cells contain catalase.</p>`}),
+  cardTest('E', 'Show catalase in the cut, H₂O₂ going in, and bubbles coming out.'),
+  mcq({q:'What are the bubbles in the foam?', options:['Oxygen gas','Water vapor','Catalase'], correct:0,
+    right:'Correct. Oxygen is a product of the reaction.', wrong:['','Water is the other product, but it does not make the bubbles.','Catalase is the enzyme. It is not used up and does not turn into gas.']}),
+  info({tag:'🃏', title:'Card F: A very high fever', html:`<p>Normal body temperature is about 37°C. A fever above 41°C is dangerous. Doctors work hard to bring it down.</p>`}),
+  cardTest('F', 'Think about what very high heat does to the shape of enzymes.'),
+  mcq({q:'Which idea from your model explains why a very high fever is dangerous?', options:['Heat makes enzymes bigger','Very high heat can denature enzymes, so reactions in the body slow down or stop','Heat adds more substrate'], correct:1,
+    right:'Correct. Enzymes need their shape to work. That is why body temperature must stay stable.', wrong:['Heat does not make enzymes bigger. It can change their shape.','','Heat does not add substrate. Think about shape.']}),
+  predCheck(8),
+  next => { const e = scoreTable(); next(); return e; }
+]},
+{ c:'purple', cycle:'Explain', skill:'Claim, evidence, reasoning', title:'Claim, evidence, reasoning',
+  mission:'Use your model and your data to write a scientific explanation.',
+  blocks:() => [
+  info({title:'Build your explanation', html:`<p>A scientific explanation has three parts: a <b>claim</b> (your answer), <b>evidence</b> (data that supports it), and <b>reasoning</b> (the science that connects them). Tap <b>📖 Word help</b> for any of these words.</p>`}),
+  withHelp(mcq({q:'<b>Claim:</b> Pick the sentence that matches the data.', correct:1, key:'claim',
+    options:['Hotter catalase always works faster.','Room temperature catalase worked fastest. Iced catalase worked slowly. Boiled catalase did not work.','Iced catalase worked fastest because it was the coldest.'],
+    right:'Correct. That claim matches all three conditions.',
+    wrong:['Boiled was the hottest, and it did not work at all.','','Iced took longer to rise. Look at Card A.'],
+    onRight:() => { S.cer.claim = S.answers.claim; }}), 'claim', 'Word help: claim'),
+  withHelp(mcq({q:'<b>Evidence:</b> Which one is the best evidence?', correct:0, key:'evidence',
+    options:[`Room: ${avg(DATA.room)} s. Iced: ${avg(DATA.iced)} s. Boiled: did not rise in ${DATA.limit} s.`,'Catalase is a protein found in living things.','My model has an active site.'],
+    right:'Correct. Evidence is data from the investigation.',
+    wrong:['','That is true, but it is background information, not data.','That is part of your model, not data.'],
+    onRight:() => { S.cer.evidence = S.answers.evidence; }}), 'evidence', 'Word help: evidence'),
+  withHelp(reasoningBlock(), 'reasoning', 'Word help: reasoning'),
+  openBlock({q:'<b>In your own words:</b> Write 2 sentences. Why did the boiled catalase make no oxygen? Use at least 2 words from the word bank.', ph:'The boiled catalase made no oxygen because…', min:40, store:v => { S.cer.own = v; }})
+]},
+{ c:'orange', cycle:'Reflect', skill:'Reflection', title:'Reflect and give feedback',
+  mission:'Look back at how your thinking changed. Then tell us how this activity worked for you. There are no wrong answers here.',
+  blocks:() => [
+  info({title:'How did this help you learn?', html:`<p>Pick the answer that is true for you.</p>`}),
+  choice({q:'How much did your model change from start to finish?', options:['Not at all','A little','A lot'], key:'r1'}),
+  choice({q:'Which new information changed your model the most?', options:['Card A: the time data','Card B: the boiled spheres','Card C: cooling the boiled enzyme','Card D: a different enzyme','Card E: the scraped knee','Card F: the high fever'], key:'r2'}),
+  choice({q:'How much did adding predictions to your model before each test help you learn?', options:['A lot','Some','Not much'], key:'r6'}),
+  choice({q:'Which part of the activity helped you learn the most?', options:['Drawing my first model','The key word checks','Predicting before each test','The simulation','The lab data and real-life cards','Writing my explanation (CER)'], key:'r7'}),
+  choice({q:'What is one thing a desk drawing can NOT show well?', options:['Real enzymes are 3D, but my drawing is flat','Particles are always moving, but my drawing is still','Both of these'], key:'r4'}),
+  choice({q:'How sure are you about your model now?', options:['Not sure','Kind of sure','Very sure'], key:'r5'}),
+  info({tag:'💬', title:'Your feedback', html:`<p>Your honest answers help improve this activity for future classes.</p>`}),
+  choice({q:'How would you rate this activity?', options:['I liked it','It was okay','I did not like it'], key:'f1'}),
+  choice({q:'Compared to notes or a worksheet, this activity helped me understand enzymes…', options:['More','About the same','Less'], key:'f2'}),
+  choice({q:'Which help tools did you use?', options:['Word help','Read to me','Both','Neither'], key:'f3'}),
+  choice({q:'How was the reading?', options:['Too easy','Just right','Too hard'], key:'f4'}),
+  choice({q:'How was the pace?', options:['Too fast','Just right','Too slow'], key:'f5'}),
+  openBlock({q:'<b>Optional:</b> What is one thing you would change or add to make this activity better? You may skip by saving “none”.', ph:'I would change…', min:4, store:v => { S.refl.change = v; }}),
+  openBlock({q:'<b>Optional:</b> One question I still have. You may skip by saving “none”.', ph:'I still wonder…', min:4, store:v => { S.refl.q = v; }})
+]}
+];
+
+const CARDS = [['A','Iced and room data'],['B','Boiled spheres'],['C','Cooled boiled enzyme'],['D','A different enzyme'],['E','A scraped knee'],['F','A very high fever']];
+const PRED = [[3,'Why catalase only works on H₂O₂ (shape)'],[4,'How temperature changes the reaction'],[5,'Measuring the reaction (Card A)'],[6,'Boiled catalase (Card B)'],[7,'Cooling it back down and a different enzyme (Cards C and D)'],[8,'Real life: a cut and a high fever (Cards E and F)']];
+function scoreTable(){
+  const t = el('table', {class:'score'}, el('tr', null, el('th', null, 'Card'), el('th', null, 'What happened to my model')));
+  CARDS.forEach(([k, n]) => t.append(el('tr', null, el('td', null, `${k}: ${n}`), el('td', null, S.cards[k] === 'explains' ? '✅ Held up' : S.cards[k] === 'revised' ? '🔧 I revised it' : '—'))));
+  return el('div', {class:'stage', 'data-c':'green'}, el('p', {class:'qtext', html:'<b>Your model scoreboard</b>'}), t);
+}
+
+/* ====================== SCREENS ====================== */
+const views = {}, stageLayers = {};
+let cur = -1, maxReached = -1;
+const ALL_LAYERS = ['start','terms','products','site','energy','denat','amylase'];
+const segsEl = document.getElementById('segs'), plabel = document.getElementById('plabel'), progress = document.getElementById('progress');
+const colorVar = {pink:'--pink-e', blue:'--blue-e', green:'--green-e', orange:'--orange-e', purple:'--purple-e'};
+
+function applyBoard(idx){
+  ALL_LAYERS.forEach(l => board.classList.remove('has-' + l));
+  const top = Math.min(idx, STAGES.length - 1);
+  for (let k = 0; k <= top; k++) (stageLayers[k] || []).forEach(l => board.classList.add('has-' + l));
+}
+function setProgress(i){
+  const N = STAGES.length;
+  progress.hidden = supportOpen() || maxReached < 0;
+  segsEl.innerHTML = '';
+  STAGES.forEach((s, k) => segsEl.append(el('button', {
+    class:'seg' + (k === i ? ' now' : (views[k] && views[k].done ? ' done' : '')),
+    type:'button', disabled: k > maxReached, style:`--c:var(${colorVar[s.c]})`,
+    'aria-label':`Go to stage ${k + 1}: ${s.title}`, 'aria-current': k === i ? 'step' : false,
+    onClick:() => renderStage(k)})));
+  plabel.textContent = i < 0 ? 'Before you start'
+    : i === N ? 'All done. Here is your report.'
+    : `Stage ${i + 1} of ${N}: ${STAGES[i].title}` + (i < maxReached ? ' (looking back)' : '');
+}
+function show(idx){
+  const N = STAGES.length;
+  cur = idx; stopSpeech();
+  Object.keys(views).forEach(k => { views[k].sec.hidden = true; });
+  views[idx].sec.hidden = false;
+  const boardcol = document.getElementById('boardcol');
+  if (idx === N){ layout.classList.add('solo'); views[idx].holder.append(board); }
+  else { layout.classList.remove('solo'); if (board.parentNode !== boardcol) boardcol.append(board); }
+  applyBoard(idx);
+  setProgress(idx);
+  if (views[-1] && views[0]) views[-1].startBtn.textContent = 'Continue the activity';
+  window.scrollTo({top:0});
+}
+const backBtn = target => el('button', {class:'btn', type:'button', onClick:() => show(target)}, '← Back');
+
+function renderIntro(){
+  const body = el('div', {class:'stage-body'});
+  const startBtn = el('button', {class:'btn primary big', type:'button', onClick:() => renderStage(0)}, 'Start the activity');
+  body.append(
+    el('div', {class:'callout', html:`<h3>What is a model?</h3><p>A <b>model</b> is a simplified picture or explanation of how something works. Scientists use models to make predictions and then test them against evidence. A good model is not one that is perfect at the start. It is one that gets better when new information shows up.</p>`}),
+    el('h3', {style:'margin:18px 0 0', html:'How this activity works'}),
+    el('ul', {class:'road'},
+      el('li', {html:`<span class="ico">✏️</span><b>Draw</b><p>Sketch your first model of how catalase works. Use what you already know.</p>`}),
+      el('li', {html:`<span class="ico">🔍</span><b>Check</b><p>A key word checklist shows which ideas your drawing already has.</p>`}),
+      el('li', {html:`<span class="ico">🔮</span><b>Predict</b><p>Before each test, add to your model what you think will happen.</p>`}),
+      el('li', {html:`<span class="ico">🧪</span><b>Test</b><p>Simulations, lab data, and real-life cards show if your prediction was right.</p>`}),
+      el('li', {html:`<span class="ico">🔧</span><b>Revise</b><p>If your model was wrong, fix it in ${C2}. Revising is the skill.</p>`}),
+      el('li', {html:`<span class="ico">📝</span><b>Explain</b><p>Finish with a claim, evidence, and reasoning, and a short reflection.</p>`})),
+    el('div', {class:'two'},
+      el('div', {class:'draw', html:`<div class="tg">🧰 Get ready</div><ol><li>Get a dry-erase marker in <b>two colors</b>.</li><li>Draw on your desk. Use ${C1} for your first draft.</li><li>Use ${C2} for everything you add after that, including predictions.</li><li>After each test, put a ✔ next to what was right. Cross out what was wrong and redraw it. Do not erase, so your thinking stays visible.</li></ol><div class="absent">📄 <b>Were you absent?</b> Draw everything on a sheet of paper instead. Use two colors of pen or pencil. You can still do the whole activity.</div>`}),
+      el('div', {class:'callout', html:`<h3>Help is built in</h3><p>📖 <b>Word help</b> explains key words in plain language, with word parts and examples.</p><p>🔊 <b>Read to me</b> reads each step out loud. Turn it on at the top of the page.</p><p>⬅️ You can go <b>back</b> to any stage you have finished. Use the colored bar at the top or the Back button.</p><div class="skills"><span>Modeling</span><span>Predicting</span><span>Reading data</span><span>Using evidence</span><span>Revising</span><span>Claim, evidence, reasoning</span></div>`})));
+  body.append(startBtn);
+  const sec = el('section', {class:'stage view', 'data-c':'pink'},
+    el('div', {class:'stage-head'}, el('span', {class:'lvl'}, '🧬'), el('h2', null, 'Before you start')), body);
+  main.append(sec);
+  views[-1] = {sec, done:true, startBtn};
+  show(-1);
+}
+function renderStage(i){
+  if (views[i]){ show(i); return; }
+  cur = i; maxReached = Math.max(maxReached, i);
+  const st = STAGES[i];
+  const body = el('div', {class:'stage-body'});
+  const nav = el('div', {class:'nav'}, backBtn(i - 1));
+  const sec = el('section', {class:'stage view', 'data-c':st.c},
+    el('div', {class:'stage-head'}, el('span', {class:'lvl'}, String(i + 1)), el('h2', null, st.title)),
+    el('div', {class:'mission'}, el('span', {class:'cyc'}, st.cycle), el('p', null, st.mission), el('p', {class:'skill'}, 'Skill: ' + st.skill)),
+    body, nav);
+  views[i] = {sec, nav, done:false};
+  main.append(sec);
+  const blocks = st.blocks();
+  show(i);
+  runSeq(body, blocks, () => {
+    views[i].done = true;
+    const last = i === STAGES.length - 1;
+    const b = el('button', {class:'btn primary big', type:'button', onClick:() => last ? renderSummary() : renderStage(i + 1)}, last ? 'See my report' : `Next: ${STAGES[i + 1].title}`);
+    nav.append(b);
+    setProgress(cur);
+    if (cur === i) b.scrollIntoView({block:'nearest', behavior: reduce ? 'auto' : 'smooth'});
+  });
+}
+function buildReport(){
+  const L = [];
+  L.push(`Name: ${S.name || '__________'}    Hour: ${S.hour || '____'}`);
+  L.push('#10 Modeling Enzymes', '');
+  L.push('KEY WORDS IN MY FIRST DRAWING');
+  [['enzyme','Enzyme'],['substrate','Substrate'],['products','Products'],['site','Active site'],['collide','Collide'],['ae','Activation energy'],['denature','Denatured']].forEach(([k, n]) =>
+    L.push(`${n}: ${S.answers['v_' + k] || 'no answer'}`));
+  L.push('', 'MY PREDICTIONS (added to my model before each test)');
+  PRED.forEach(([n, t]) => L.push(`${t}: ${S.answers['p' + n] || 'no answer'}`));
+  L.push('', 'MODEL CHECK');
+  CARDS.forEach(([k, n]) =>
+    L.push(`Card ${k} (${n}): ${S.cards[k] === 'explains' ? 'my model explained it' : S.cards[k] === 'revised' ? 'I revised my model' : 'no answer'}`));
+  L.push('', 'CLAIM', S.cer.claim || '', '', 'EVIDENCE', S.cer.evidence || '', '', 'REASONING', S.cer.reasoning || '', '', 'IN MY OWN WORDS', S.cer.own || '', '');
+  L.push('REFLECTION');
+  L.push(`My model changed: ${S.answers.r1 || ''}`);
+  L.push(`Biggest change came from: ${S.answers.r2 || ''}`);
+  L.push(`Predicting before each test helped: ${S.answers.r6 || ''}`);
+  L.push(`The part that helped me learn the most: ${S.answers.r7 || ''}`);
+  L.push(`A desk drawing can not show: ${S.answers.r4 || ''}`);
+  L.push(`How sure I was at the start: ${S.answers.conf0 || ''}`);
+  L.push(`How sure I am now: ${S.answers.r5 || ''}`);
+  L.push('', 'FEEDBACK');
+  L.push(`Rating: ${S.answers.f1 || ''}`);
+  L.push(`Compared to notes or a worksheet, I understood enzymes: ${S.answers.f2 || ''}`);
+  L.push(`Help tools I used: ${S.answers.f3 || ''}`);
+  L.push(`The reading was: ${S.answers.f4 || ''}`);
+  L.push(`The pace was: ${S.answers.f5 || ''}`);
+  L.push(`One thing I would change or add: ${S.refl.change || ''}`);
+  L.push(`A question I still have: ${S.refl.q || ''}`);
+  return L.join('\n');
+}
+function renderSummary(){
+  const N = STAGES.length;
+  if (views[N]){ show(N); return; }
+  maxReached = Math.max(maxReached, N - 1);
+  const body = el('div', {class:'stage-body'});
+  const nameIn = el('input', {type:'text', 'aria-label':'Your name', placeholder:'Your name', autocomplete:'off'});
+  const hourIn = el('input', {type:'text', 'aria-label':'Class hour', placeholder:'Hour', autocomplete:'off'});
+  const ta = el('textarea', {class:'report', readonly:true, 'aria-label':'Your report'});
+  const msg = el('div', {class:'fb', 'aria-live':'polite'});
+  const refresh = () => { S.name = nameIn.value.trim(); S.hour = hourIn.value.trim(); ta.value = buildReport(); };
+  nameIn.addEventListener('input', refresh); hourIn.addEventListener('input', refresh);
+  refresh();
+  const copy = el('button', {class:'btn primary big', type:'button', onClick:async () => {
+    refresh(); ta.select();
+    try { await navigator.clipboard.writeText(ta.value); msg.className = 'fb ok'; msg.textContent = '✅ Copied. Paste it where your teacher tells you.'; }
+    catch (e) {
+      let ok = false; try { ok = document.execCommand('copy'); } catch (e2) {}
+      msg.className = ok ? 'fb ok' : 'fb tip';
+      msg.textContent = ok ? '✅ Copied. Paste it where your teacher tells you.' : 'The text is selected. Press Ctrl+C (or ⌘+C) to copy it.';
+    }
+  }}, 'Copy my report');
+  const holder = el('div', {style:'max-width:460px; margin:6px 0 14px'});
+  const burst = el('div', {class:'burst', 'aria-hidden':'true'});
+  const cols = ['#ff4f8b','#2f7bff','#0fa97a','#ff9a1f','#7c4dff','#ffd23f'];
+  for (let i = 0; i < 22; i++){
+    const sz = 14 + Math.random()*30;
+    burst.append(el('i', {style:`left:${Math.random()*96}%; width:${sz}px; height:${sz}px; background:${cols[i % cols.length]}55; animation-delay:${(Math.random()*1.2).toFixed(2)}s`}));
+  }
+  body.append(
+    burst,
+    el('div', {class:'callout', html:'<h3>🎉 Your model is built</h3><p>Compare your desk to the finished Model Board below. Then add your name and copy your report.</p>'}),
+    el('div', {style:'margin-top:14px'}, holder),
+    scoreTable(),
+    el('div', {class:'name-row'}, nameIn, hourIn),
+    ta, el('div', {style:'margin:12px 0'}, copy), msg,
+    el('p', {class:'small'}, 'Your teacher will tell you where to paste this report.'),
+    el('div', {class:'nav'}, backBtn(N - 1)));
+  const sec = el('section', {class:'stage view', 'data-c':'green'},
+    el('div', {class:'stage-head'}, el('span', {class:'lvl'}, '🏁'), el('h2', null, 'My Model Report')), body);
+  main.append(sec);
+  views[N] = {sec, holder, done:true};
+  show(N);
+}
+
+/* ====================== STARTUP ====================== */
+(function startup(){
+  const bub = document.getElementById('bub');
+  for (let i = 0; i < 16; i++){
+    const s = 10 + Math.random()*38;
+    bub.append(el('i', {style:`left:${(Math.random()*100).toFixed(1)}%; width:${s}px; height:${s}px; animation-duration:${(9 + Math.random()*9).toFixed(1)}s; animation-delay:-${(Math.random()*14).toFixed(1)}s`}));
+  }
+  const tb = document.getElementById('toolbar');
+  const setTb = () => document.documentElement.style.setProperty('--tb', tb.offsetHeight + 'px');
+  setTb();
+  if (window.ResizeObserver) new ResizeObserver(setTb).observe(tb); else window.addEventListener('resize', setTb);
+  renderIntro();
+  window.__route();
+})();
+</script>
+</body>
+</html>
